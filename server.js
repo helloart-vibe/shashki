@@ -188,7 +188,9 @@ async function handleApi(req, res) {
 
     if (req.method === "POST" && parts.length === 4 && parts[3] === "join") {
       const body = await readBody(req);
-      const existingColor = ["white", "black"].find((color) => room.players[color] === body.token);
+      const existingColor = body.token
+        ? ["white", "black"].find((color) => room.players[color] === body.token)
+        : null;
 
       if (existingColor) {
         json(res, 200, {
