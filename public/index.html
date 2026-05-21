@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Русские шашки онлайн</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <section class="side-panel">
+        <div>
+          <p class="eyebrow">онлайн-партия</p>
+          <h1>Русские шашки</h1>
+          <p class="status" id="statusText">Создайте комнату или подключитесь по коду.</p>
+        </div>
+
+        <div class="room-actions">
+          <button class="primary" id="createRoomButton" type="button">Создать комнату</button>
+          <form id="joinForm" class="join-form">
+            <input id="roomInput" autocomplete="off" maxlength="6" placeholder="Код комнаты" />
+            <button type="submit">Войти</button>
+          </form>
+        </div>
+
+        <div class="room-card" id="roomCard" hidden>
+          <div>
+            <span>Комната</span>
+            <strong id="roomCode">----</strong>
+          </div>
+          <button id="copyLinkButton" type="button">Ссылка</button>
+        </div>
+
+        <div class="player-strip">
+          <div>
+            <span>Вы</span>
+            <strong id="playerColor">не подключены</strong>
+          </div>
+          <div>
+            <span>Игроки</span>
+            <strong id="playerCount">0/2</strong>
+          </div>
+          <div>
+            <span>Ход</span>
+            <strong id="turnText">-</strong>
+          </div>
+        </div>
+
+        <div class="captures" id="hintText">
+          Обязательное взятие подсветится автоматически.
+        </div>
+      </section>
+
+      <section class="board-shell" aria-label="Игровая доска">
+        <div class="board" id="board"></div>
+      </section>
+    </main>
+
+    <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+    <script src="/rules.js"></script>
+    <script src="/app.js"></script>
+  </body>
+</html>
