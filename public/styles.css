@@ -169,14 +169,6 @@ h1 {
   font-size: 20px;
 }
 
-.captures {
-  min-height: 56px;
-  border-left: 3px solid var(--accent);
-  padding-left: 12px;
-  color: var(--muted);
-  line-height: 1.45;
-}
-
 .debug-line {
   color: #91a8b2;
   font-size: 12px;

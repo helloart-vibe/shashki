@@ -1,6 +1,5 @@
 const boardEl = document.querySelector("#board");
 const statusText = document.querySelector("#statusText");
-const hintText = document.querySelector("#hintText");
 const roomCard = document.querySelector("#roomCard");
 const roomCodeEl = document.querySelector("#roomCode");
 const playerColorEl = document.querySelector("#playerColor");
@@ -221,15 +220,6 @@ function renderStatus() {
     statusText.textContent = "Вы смотрите партию.";
   } else {
     statusText.textContent = "Ждем ход соперника.";
-  }
-
-  const hasCapture = legalMoves.some((move) => move.steps.some((step) => step.capture));
-  if (hasCapture && isMyTurn()) {
-    hintText.textContent = "Есть обязательное взятие. Выберите подсвеченную шашку и доведите серию до конца.";
-  } else if (selected && pendingSteps.length > 0) {
-    hintText.textContent = "Продолжайте серию взятий этой же шашкой.";
-  } else {
-    hintText.textContent = "Дамка ходит и бьет по всей диагонали. Простая шашка бьет назад и вперед.";
   }
 
   if (room.server) {
