@@ -228,6 +228,16 @@ h1 {
   cursor: pointer;
 }
 
+.cell.capture-target::before {
+  position: absolute;
+  width: 48%;
+  aspect-ratio: 1;
+  border: 3px solid rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  background: rgba(206, 107, 100, 0.58);
+  content: "";
+}
+
 .cell:disabled {
   cursor: default;
   opacity: 1;

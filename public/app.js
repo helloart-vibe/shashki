@@ -149,6 +149,9 @@ function renderBoard() {
       }
 
       if (displaySelected && samePoint(displaySelected, point)) cell.classList.add("selected");
+      if (pendingSteps.length > 0 && targets.has(key)) {
+        cell.classList.add("capture-target");
+      }
 
       const piece = board[r][c];
       if (piece) {
