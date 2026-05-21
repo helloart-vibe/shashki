@@ -101,6 +101,13 @@ function resetSelection() {
   pendingSteps = [];
 }
 
+function selectedDisplayPoint() {
+  if (pendingSteps.length > 0) {
+    return pendingSteps[pendingSteps.length - 1].to;
+  }
+  return selected;
+}
+
 function boardPointsForPlayer() {
   const rows = [...Array(8).keys()];
   const cols = [...Array(8).keys()];
@@ -119,6 +126,7 @@ function renderBoard() {
   const targets = nextTargets();
   const selectable = new Set();
   const { rows, cols } = boardPointsForPlayer();
+  const displaySelected = selectedDisplayPoint();
 
   if (isMyTurn()) {
     for (const move of legalMoves) selectable.add(pointKey(move.from));
@@ -140,7 +148,7 @@ function renderBoard() {
         cell.dataset.coord = `${files[c]}${8 - r}`;
       }
 
-      if (selected && samePoint(selected, point)) cell.classList.add("selected");
+      if (displaySelected && samePoint(displaySelected, point)) cell.classList.add("selected");
 
       const piece = board[r][c];
       if (piece) {
@@ -290,7 +298,13 @@ function handleCellClick(point) {
     }
 
     pendingSteps = nextSteps;
+    showToast("Продолжайте взятие этой же дамкой.");
     render();
+    return;
+  }
+
+  if (selected && room.game.board[point.r][point.c]?.color === CheckersRules.opponent(player.color)) {
+    showToast("Для взятия нажмите на пустую клетку за шашкой соперника.");
     return;
   }
 
