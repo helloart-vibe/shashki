@@ -7,6 +7,8 @@ const { CheckersRules } = require("./public/rules.js");
 const PORT = Number(process.env.PORT || 3000);
 const HOST = process.env.HOST || "127.0.0.1";
 const PUBLIC_DIR = path.join(__dirname, "public");
+const APP_VERSION = "2026-05-21-sync-debug";
+const INSTANCE_ID = crypto.randomBytes(4).toString("hex");
 const rooms = new Map();
 
 const mimeTypes = {
@@ -39,6 +41,11 @@ function publicRoom(room) {
       black: Boolean(room.players.black),
     },
     updatedAt: room.updatedAt,
+    server: {
+      version: APP_VERSION,
+      instanceId: INSTANCE_ID,
+      roomCount: rooms.size,
+    },
   };
 }
 
@@ -148,6 +155,16 @@ async function handleApi(req, res) {
   const parts = url.pathname.split("/").filter(Boolean);
 
   try {
+    if (req.method === "GET" && url.pathname === "/api/health") {
+      json(res, 200, {
+        ok: true,
+        version: APP_VERSION,
+        instanceId: INSTANCE_ID,
+        roomCount: rooms.size,
+      });
+      return;
+    }
+
     if (req.method === "POST" && url.pathname === "/api/rooms") {
       const { room, player } = createRoom();
       json(res, 201, {
@@ -266,5 +283,7 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(PORT, HOST, () => {
-  console.log(`Russian checkers is running at http://${HOST}:${PORT}`);
+  console.log(
+    `Russian checkers ${APP_VERSION} (${INSTANCE_ID}) is running at http://${HOST}:${PORT}`
+  );
 });

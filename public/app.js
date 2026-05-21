@@ -11,6 +11,7 @@ const joinForm = document.querySelector("#joinForm");
 const roomInput = document.querySelector("#roomInput");
 const copyLinkButton = document.querySelector("#copyLinkButton");
 const toastEl = document.querySelector("#toast");
+const debugLine = document.querySelector("#debugLine");
 
 const files = ["a", "b", "c", "d", "e", "f", "g", "h"];
 let room = null;
@@ -195,6 +196,10 @@ function renderStatus() {
   } else {
     hintText.textContent = "Дамка ходит и бьет по всей диагонали. Простая шашка бьет назад и вперед.";
   }
+
+  if (room.server) {
+    debugLine.textContent = `sync: ${room.server.version} / ${room.server.instanceId} / rooms ${room.server.roomCount}`;
+  }
 }
 
 function render() {
@@ -209,7 +214,13 @@ async function api(path, options = {}) {
     headers: { "content-type": "application/json" },
     ...options,
   });
-  const payload = await response.json();
+  const text = await response.text();
+  let payload = {};
+  try {
+    payload = text ? JSON.parse(text) : {};
+  } catch {
+    throw new Error(`Сервер вернул не JSON для ${path}. Проверьте, что открыт backend-деплой.`);
+  }
   if (!response.ok) throw new Error(payload.error || "Ошибка запроса");
   return payload;
 }

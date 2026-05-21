@@ -177,6 +177,13 @@ h1 {
   line-height: 1.45;
 }
 
+.debug-line {
+  color: #91a8b2;
+  font-size: 12px;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
 .board-shell {
   display: grid;
   place-items: center;
