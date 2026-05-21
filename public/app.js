@@ -18,7 +18,7 @@ let player = { color: "spectator", token: null };
 let selected = null;
 let pendingSteps = [];
 let legalMoves = [];
-let pollAbort = null;
+let pollTimer = null;
 let toastTimer = null;
 
 function storageKey(code) {
@@ -297,29 +297,25 @@ function showError(error) {
 
 function startPolling() {
   if (!room) return;
-  if (pollAbort) pollAbort.abort();
-  pollAbort = new AbortController();
+  clearTimeout(pollTimer);
 
-  async function poll() {
-    while (room && !pollAbort.signal.aborted) {
-      try {
-        const payload = await api(`/api/rooms/${room.code}?since=${room.version}`, {
-          signal: pollAbort.signal,
-        });
-        if (payload.room.version !== room.version) {
-          room = payload.room;
-          render();
-        }
-      } catch (error) {
-        if (error.name !== "AbortError") {
-          statusText.textContent = "Связь прервалась. Переподключаемся...";
-          await new Promise((resolve) => setTimeout(resolve, 1500));
-        }
+  async function pollOnce() {
+    if (!room) return;
+
+    try {
+      const payload = await api(`/api/rooms/${room.code}`);
+      if (payload.room.version !== room.version) {
+        room = payload.room;
+        render();
       }
+    } catch (error) {
+      statusText.textContent = "Связь прервалась. Переподключаемся...";
+    } finally {
+      pollTimer = setTimeout(pollOnce, 1000);
     }
   }
 
-  poll();
+  pollTimer = setTimeout(pollOnce, 1000);
 }
 
 createRoomButton.addEventListener("click", () => {
