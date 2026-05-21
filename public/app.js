@@ -21,6 +21,7 @@ let pendingSteps = [];
 let legalMoves = [];
 let pollTimer = null;
 let toastTimer = null;
+let showForcedCaptures = false;
 
 function storageKey(code) {
   return `russian-checkers:${code}`;
@@ -115,6 +116,7 @@ function showToast(message) {
 function resetSelection() {
   selected = null;
   pendingSteps = [];
+  showForcedCaptures = false;
 }
 
 function selectedDisplayPoint() {
@@ -166,7 +168,7 @@ function renderBoard() {
       }
 
       if (displaySelected && samePoint(displaySelected, point)) cell.classList.add("selected");
-      if ((pendingSteps.length > 0 && targets.has(key)) || forcedTargets.has(key)) {
+      if ((pendingSteps.length > 0 && targets.has(key)) || (showForcedCaptures && forcedTargets.has(key))) {
         cell.classList.add("capture-target");
       }
 
@@ -183,7 +185,10 @@ function renderBoard() {
       if (waitingOwnPiece) cell.classList.add("waiting-piece");
       cell.disabled =
         !room ||
-        (!waitingOwnPiece && !selectable.has(key) && !targets.has(key) && !forcedTargets.has(key));
+        (!waitingOwnPiece &&
+          !selectable.has(key) &&
+          !targets.has(key) &&
+          !(showForcedCaptures && forcedTargets.has(key)));
       cell.addEventListener("click", () => handleCellClick(point));
       boardEl.append(cell);
     }
@@ -322,13 +327,16 @@ function handleCellClick(point) {
     }
 
     pendingSteps = nextSteps;
+    showForcedCaptures = false;
     showToast("Продолжайте взятие этой же шашкой.");
     render();
     return;
   }
 
   if (hasCapture && !selected && !clickedPiece) {
+    showForcedCaptures = true;
     showToast("Сначала выберите шашку, которая должна рубить.");
+    render();
     return;
   }
 
@@ -341,11 +349,16 @@ function handleCellClick(point) {
   if (starts.length > 0) {
     selected = point;
     pendingSteps = [];
+    showForcedCaptures = false;
     render();
   } else if (hasCapture && clickedPiece?.color === player.color) {
+    showForcedCaptures = true;
     showToast("Сейчас обязательно нужно рубить. Выберите шашку, у которой есть подсвеченное взятие.");
+    render();
   } else if (hasCapture && !clickedPiece) {
+    showForcedCaptures = true;
     showToast("Сейчас обязательно нужно рубить. Нажмите на подсвеченную клетку после выбора рубящей шашки.");
+    render();
   }
 }
 
