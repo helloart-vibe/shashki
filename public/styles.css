@@ -67,6 +67,17 @@ button.primary:hover {
   background: var(--accent-strong);
 }
 
+button.danger {
+  border-color: var(--danger);
+  color: #ffffff;
+  background: var(--danger);
+}
+
+button.danger:hover {
+  border-color: #b7544f;
+  background: #b7544f;
+}
+
 button:disabled {
   cursor: not-allowed;
   opacity: 0.55;

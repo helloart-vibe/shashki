@@ -218,6 +218,30 @@ async function handleApi(req, res) {
       return;
     }
 
+    if (req.method === "POST" && parts.length === 4 && parts[3] === "leave") {
+      const body = await readBody(req);
+      const color = ["white", "black"].find((candidate) => room.players[candidate] === body.token);
+
+      if (!color) {
+        json(res, 200, { room: publicRoom(room) });
+        return;
+      }
+
+      if (room.game.status === "playing" && isRoomReady(room)) {
+        room.game = {
+          ...room.game,
+          status: "finished",
+          winner: CheckersRules.opponent(color),
+          message: `${color === "white" ? "Белые" : "Черные"} сдались`,
+        };
+      }
+
+      room.players[color] = null;
+      touch(room);
+      json(res, 200, { room: publicRoom(room) });
+      return;
+    }
+
     if (req.method === "POST" && parts.length === 4 && parts[3] === "move") {
       const body = await readBody(req);
       const color = body.color;

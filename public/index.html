@@ -15,12 +15,16 @@
           <p class="status" id="statusText">Создайте комнату или подключитесь по коду.</p>
         </div>
 
-        <div class="room-actions">
+        <div class="room-actions" id="lobbyActions">
           <button class="primary" id="createRoomButton" type="button">Создать комнату</button>
           <form id="joinForm" class="join-form">
             <input id="roomInput" autocomplete="off" maxlength="6" placeholder="Код комнаты" />
             <button type="submit">Войти</button>
           </form>
+        </div>
+
+        <div class="room-actions" id="gameActions" hidden>
+          <button class="danger" id="leaveRoomButton" type="button">Выйти</button>
         </div>
 
         <div class="room-card" id="roomCard" hidden>

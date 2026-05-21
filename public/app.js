@@ -5,7 +5,10 @@ const roomCodeEl = document.querySelector("#roomCode");
 const playerColorEl = document.querySelector("#playerColor");
 const playerCountEl = document.querySelector("#playerCount");
 const turnText = document.querySelector("#turnText");
+const lobbyActions = document.querySelector("#lobbyActions");
+const gameActions = document.querySelector("#gameActions");
 const createRoomButton = document.querySelector("#createRoomButton");
+const leaveRoomButton = document.querySelector("#leaveRoomButton");
 const joinForm = document.querySelector("#joinForm");
 const roomInput = document.querySelector("#roomInput");
 const copyLinkButton = document.querySelector("#copyLinkButton");
@@ -29,6 +32,11 @@ function storageKey(code) {
 function saveSession(code) {
   if (!code || !player.token) return;
   localStorage.setItem(storageKey(code), JSON.stringify(player));
+}
+
+function clearSession(code) {
+  if (!code) return;
+  localStorage.removeItem(storageKey(code));
 }
 
 function loadSession(code) {
@@ -200,10 +208,15 @@ function renderStatus() {
     playerColorEl.textContent = "не подключены";
     playerCountEl.textContent = "0/2";
     turnText.textContent = "-";
+    lobbyActions.hidden = false;
+    gameActions.hidden = true;
     roomCard.hidden = true;
     return;
   }
 
+  lobbyActions.hidden = true;
+  gameActions.hidden = false;
+  leaveRoomButton.textContent = isRoomReady() && player.color !== "spectator" ? "Сдаться" : "Выйти";
   roomCard.hidden = false;
   roomCodeEl.textContent = room.code;
   playerColorEl.textContent = colorName(player.color);
@@ -286,6 +299,31 @@ async function submitMove(move) {
   });
   room = payload.room;
   resetSelection();
+  render();
+}
+
+async function leaveRoom() {
+  const currentRoom = room;
+  const currentPlayer = player;
+
+  if (currentRoom && currentPlayer.token) {
+    try {
+      await api(`/api/rooms/${currentRoom.code}/leave`, {
+        method: "POST",
+        body: JSON.stringify({ token: currentPlayer.token }),
+      });
+    } catch (error) {
+      showToast("Не удалось сообщить серверу о выходе, но вы вернулись в меню.");
+    }
+    clearSession(currentRoom.code);
+  }
+
+  clearTimeout(pollTimer);
+  room = null;
+  player = { color: "spectator", token: null };
+  resetSelection();
+  history.replaceState(null, "", "/");
+  roomInput.value = "";
   render();
 }
 
@@ -381,6 +419,10 @@ function startPolling() {
 
 createRoomButton.addEventListener("click", () => {
   createRoom().catch(showError);
+});
+
+leaveRoomButton.addEventListener("click", () => {
+  leaveRoom().catch(showError);
 });
 
 joinForm.addEventListener("submit", (event) => {
