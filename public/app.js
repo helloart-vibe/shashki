@@ -78,6 +78,22 @@ function nextTargets() {
   return targets;
 }
 
+function hasForcedCapture() {
+  return legalMoves.some((move) => move.steps.some((step) => step.capture));
+}
+
+function forcedCaptureTargets() {
+  const targets = new Map();
+  if (!hasForcedCapture()) return targets;
+
+  for (const move of legalMoves) {
+    const step = move.steps[0];
+    if (step?.capture) targets.set(pointKey(step.to), step);
+  }
+
+  return targets;
+}
+
 function isMyTurn() {
   return (
     room &&
@@ -124,6 +140,7 @@ function renderBoard() {
   boardEl.innerHTML = "";
   const board = room?.game.board || CheckersRules.createGame().board;
   const targets = nextTargets();
+  const forcedTargets = forcedCaptureTargets();
   const selectable = new Set();
   const { rows, cols } = boardPointsForPlayer();
   const displaySelected = selectedDisplayPoint();
@@ -149,7 +166,7 @@ function renderBoard() {
       }
 
       if (displaySelected && samePoint(displaySelected, point)) cell.classList.add("selected");
-      if (pendingSteps.length > 0 && targets.has(key)) {
+      if ((pendingSteps.length > 0 && targets.has(key)) || forcedTargets.has(key)) {
         cell.classList.add("capture-target");
       }
 
@@ -164,7 +181,9 @@ function renderBoard() {
         room && !isRoomReady() && piece && piece.color === player.color && room.game.status === "playing";
 
       if (waitingOwnPiece) cell.classList.add("waiting-piece");
-      cell.disabled = !room || (!waitingOwnPiece && !selectable.has(key) && !targets.has(key));
+      cell.disabled =
+        !room ||
+        (!waitingOwnPiece && !selectable.has(key) && !targets.has(key) && !forcedTargets.has(key));
       cell.addEventListener("click", () => handleCellClick(point));
       boardEl.append(cell);
     }
@@ -287,6 +306,8 @@ function handleCellClick(point) {
   if (!isMyTurn()) return;
   const key = pointKey(point);
   const targets = nextTargets();
+  const hasCapture = hasForcedCapture();
+  const clickedPiece = room.game.board[point.r][point.c];
 
   if (targets.has(key) && selected) {
     const step = targets.get(key);
@@ -301,8 +322,13 @@ function handleCellClick(point) {
     }
 
     pendingSteps = nextSteps;
-    showToast("Продолжайте взятие этой же дамкой.");
+    showToast("Продолжайте взятие этой же шашкой.");
     render();
+    return;
+  }
+
+  if (hasCapture && !selected && !clickedPiece) {
+    showToast("Сначала выберите шашку, которая должна рубить.");
     return;
   }
 
@@ -316,6 +342,10 @@ function handleCellClick(point) {
     selected = point;
     pendingSteps = [];
     render();
+  } else if (hasCapture && clickedPiece?.color === player.color) {
+    showToast("Сейчас обязательно нужно рубить. Выберите шашку, у которой есть подсвеченное взятие.");
+  } else if (hasCapture && !clickedPiece) {
+    showToast("Сейчас обязательно нужно рубить. Нажмите на подсвеченную клетку после выбора рубящей шашки.");
   }
 }
 
