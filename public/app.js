@@ -79,6 +79,8 @@ let playedMoveSoundKeys = new Set();
 let boardMoveAnimation = null;
 let capturedPiecesSnapshot = null;
 let capturedPiecesRoomCode = "";
+let lastConnectedRoomCode = "";
+let lastConnectedPlayers = null;
 const dismissedModalKeys = new Set();
 
 function normalizeTheme(theme) {
@@ -146,6 +148,17 @@ function playRoomEnterSound() {
   if (document.body.dataset.sound === "off") return;
   roomEnterSound.currentTime = 0;
   roomEnterSound.play().catch(() => {});
+}
+
+function maybePlaySecondPlayerOnline(connectedPlayers) {
+  if (!room) return;
+  const isSameRoom = lastConnectedRoomCode === room.code;
+  const previousCount = isSameRoom ? lastConnectedPlayers : null;
+
+  if (previousCount === 1 && connectedPlayers === 2) playRoomEnterSound();
+
+  lastConnectedRoomCode = room.code;
+  lastConnectedPlayers = connectedPlayers;
 }
 
 function shakeBoard() {
@@ -633,6 +646,8 @@ function renderStatus() {
     opponentCard.hidden = true;
     capturedPiecesSnapshot = null;
     capturedPiecesRoomCode = "";
+    lastConnectedRoomCode = "";
+    lastConnectedPlayers = null;
     closeModal();
     return;
   }
@@ -662,6 +677,7 @@ function renderStatus() {
   roomCodeEl.textContent = room.code;
   playerColorEl.textContent = colorName(player.color);
   const connectedPlayers = Number(room.players.white) + Number(room.players.black);
+  maybePlaySecondPlayerOnline(connectedPlayers);
   playerCountEl.textContent = `${connectedPlayers}/2`;
   playerStrip.classList.toggle("is-online", connectedPlayers === 2);
   playerStrip.classList.toggle("is-waiting", connectedPlayers < 2);
