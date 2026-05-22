@@ -44,6 +44,8 @@ const themeKey = "russian-checkers:theme";
 const uiThemeKey = "russian-checkers:ui-theme";
 const themes = new Set(["midnight", "sand", "sky", "lime", "walnut"]);
 const uiThemes = new Set(["light", "dark"]);
+const moveSound = new Audio("/move.mp3");
+moveSound.preload = "auto";
 let room = null;
 let player = { color: "spectator", token: null };
 let selected = null;
@@ -53,6 +55,7 @@ let pollTimer = null;
 let toastTimer = null;
 let showForcedCaptures = false;
 let activeModalKey = null;
+let lastMoveSoundKey = "";
 const dismissedModalKeys = new Set();
 
 function normalizeTheme(theme) {
@@ -89,6 +92,24 @@ function toggleUiTheme() {
   const nextTheme = document.body.dataset.uiTheme === "dark" ? "light" : "dark";
   localStorage.setItem(uiThemeKey, nextTheme);
   applyUiTheme(nextTheme);
+}
+
+function moveSoundKey(nextRoom = room) {
+  if (!nextRoom?.game?.lastMove) return "";
+  return `${nextRoom.code}:${JSON.stringify(nextRoom.game.lastMove)}`;
+}
+
+function rememberMoveSound(nextRoom = room) {
+  lastMoveSoundKey = moveSoundKey(nextRoom);
+}
+
+function playMoveSound(nextRoom = room) {
+  const nextKey = moveSoundKey(nextRoom);
+  if (!nextKey || nextKey === lastMoveSoundKey) return;
+
+  lastMoveSoundKey = nextKey;
+  moveSound.currentTime = 0;
+  moveSound.play().catch(() => {});
 }
 
 function storageKey(code) {
@@ -499,6 +520,7 @@ async function createRoom() {
   room = payload.room;
   player = payload.player;
   applyPlayerUpdate(payload.player);
+  rememberMoveSound(room);
   saveSession(room.code);
   history.replaceState(null, "", `/?room=${room.code}`);
   resetSelection();
@@ -521,6 +543,7 @@ async function joinRoom(code) {
   room = payload.room;
   player = payload.player;
   applyPlayerUpdate(payload.player);
+  rememberMoveSound(room);
   saveSession(room.code);
   history.replaceState(null, "", `/?room=${room.code}`);
   resetSelection();
@@ -569,6 +592,7 @@ async function respondRematch(accept) {
   });
   room = payload.room;
   applyPlayerUpdate(payload.player);
+  rememberMoveSound(room);
   resetSelection();
   closeModal(true);
   showToast(accept ? "Реванш начался." : "Реванш отклонён.");
@@ -582,6 +606,7 @@ async function submitMove(move) {
     body: JSON.stringify({ token: player.token, color: player.color, move }),
   });
   room = payload.room;
+  playMoveSound(room);
   resetSelection();
   render();
 }
@@ -777,7 +802,9 @@ function startPolling() {
       const payload = await api(`/api/rooms/${room.code}${tokenQuery}`);
       applyPlayerUpdate(payload.player);
       if (payload.room.version !== room.version) {
+        const nextRoom = payload.room;
         room = payload.room;
+        playMoveSound(nextRoom);
         render();
       }
     } catch (error) {
