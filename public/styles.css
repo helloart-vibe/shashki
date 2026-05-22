@@ -565,6 +565,14 @@ body[data-screen="game"] .board {
   background: var(--dark-cell);
 }
 
+.cell:hover {
+  background: var(--light-cell);
+}
+
+.cell.dark:hover {
+  background: var(--dark-cell);
+}
+
 .cell.coord::after {
   display: none;
 }
