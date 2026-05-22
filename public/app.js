@@ -14,6 +14,7 @@ const drawButton = document.querySelector("#drawButton");
 const joinForm = document.querySelector("#joinForm");
 const nameInput = document.querySelector("#nameInput");
 const roomInput = document.querySelector("#roomInput");
+const styleButtons = [...document.querySelectorAll(".style-swatch")];
 const copyLinkButton = document.querySelector("#copyLinkButton");
 const scoreCard = document.querySelector("#scoreCard");
 const whiteNameEl = document.querySelector("#whiteName");
@@ -26,6 +27,8 @@ const modalText = document.querySelector("#modalText");
 const modalActions = document.querySelector("#modalActions");
 
 const files = ["a", "b", "c", "d", "e", "f", "g", "h"];
+const themeKey = "russian-checkers:theme";
+const themes = new Set(["midnight", "sand", "sky", "lime"]);
 let room = null;
 let player = { color: "spectator", token: null };
 let selected = null;
@@ -36,6 +39,23 @@ let toastTimer = null;
 let showForcedCaptures = false;
 let activeModalKey = null;
 const dismissedModalKeys = new Set();
+
+function normalizeTheme(theme) {
+  return themes.has(theme) ? theme : "sky";
+}
+
+function applyTheme(theme) {
+  const nextTheme = normalizeTheme(theme);
+  document.body.dataset.theme = nextTheme;
+
+  for (const button of styleButtons) {
+    button.classList.toggle("is-selected", button.dataset.theme === nextTheme);
+  }
+}
+
+function selectedTheme() {
+  return normalizeTheme(document.body.dataset.theme);
+}
 
 function storageKey(code) {
   return `russian-checkers:${code}`;
@@ -262,6 +282,7 @@ function renderBoard() {
 
 function renderStatus() {
   if (!room) {
+    applyTheme(localStorage.getItem(themeKey));
     statusText.textContent = "Создайте комнату или подключитесь по коду.";
     playerColorEl.textContent = "не подключены";
     playerCountEl.textContent = "0/2";
@@ -275,6 +296,7 @@ function renderStatus() {
     return;
   }
 
+  applyTheme(room.theme);
   lobbyActions.hidden = true;
   gameActions.hidden = false;
   playerStrip.hidden = false;
@@ -335,7 +357,7 @@ async function createRoom() {
 
   const payload = await api("/api/rooms", {
     method: "POST",
-    body: JSON.stringify({ name }),
+    body: JSON.stringify({ name, theme: selectedTheme() }),
   });
   room = payload.room;
   player = payload.player;
@@ -562,6 +584,14 @@ createRoomButton.addEventListener("click", () => {
   createRoom().catch(showError);
 });
 
+for (const button of styleButtons) {
+  button.addEventListener("click", () => {
+    const theme = normalizeTheme(button.dataset.theme);
+    localStorage.setItem(themeKey, theme);
+    applyTheme(theme);
+  });
+}
+
 leaveRoomButton.addEventListener("click", () => {
   leaveRoom().catch(showError);
 });
@@ -587,6 +617,7 @@ copyLinkButton.addEventListener("click", async () => {
 });
 
 nameInput.value = localStorage.getItem("russian-checkers:name") || "";
+applyTheme(localStorage.getItem(themeKey));
 const initialRoom = new URLSearchParams(location.search).get("room");
 if (initialRoom) {
   const normalized = initialRoom.toUpperCase();

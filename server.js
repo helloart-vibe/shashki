@@ -10,6 +10,7 @@ const PUBLIC_DIR = path.join(__dirname, "public");
 const APP_VERSION = "2026-05-21-sync-debug";
 const INSTANCE_ID = crypto.randomBytes(4).toString("hex");
 const rooms = new Map();
+const THEMES = new Set(["midnight", "sand", "sky", "lime"]);
 
 const mimeTypes = {
   ".html": "text/html; charset=utf-8",
@@ -32,6 +33,10 @@ function cleanName(name) {
   return value.slice(0, 24);
 }
 
+function cleanTheme(theme) {
+  return THEMES.has(theme) ? theme : "sky";
+}
+
 function isRoomReady(room) {
   return Boolean(room.players.white && room.players.black);
 }
@@ -48,6 +53,7 @@ function publicRoom(room) {
     playerNames: room.playerNames,
     score: room.score,
     drawOffer: room.drawOffer,
+    theme: cleanTheme(room.theme),
     updatedAt: room.updatedAt,
     server: {
       version: APP_VERSION,
@@ -57,7 +63,7 @@ function publicRoom(room) {
   };
 }
 
-function createRoom(name) {
+function createRoom(name, theme) {
   let code = roomCode();
   while (rooms.has(code)) code = roomCode();
 
@@ -80,6 +86,7 @@ function createRoom(name) {
       black: 0,
     },
     drawOffer: null,
+    theme: cleanTheme(theme),
     waiters: new Set(),
     updatedAt: Date.now(),
   };
@@ -190,7 +197,7 @@ async function handleApi(req, res) {
         return;
       }
 
-      const { room, player } = createRoom(name);
+      const { room, player } = createRoom(name, body.theme);
       json(res, 201, {
         room: publicRoom(room),
         player: { ...player, name },

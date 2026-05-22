@@ -11,9 +11,87 @@
   --danger: #ce6b64;
   --white-piece: #ffffff;
   --black-piece: #3f86a4;
+  --king-on-white: #93c5d8;
+  --king-on-black: #9fcfe0;
+  --capture-dot: #5ca5c0;
+  --selected-ring: rgba(62, 131, 159, 0.75);
+  --board-radius: 0;
+  --board-shadow: none;
   color-scheme: light;
   font-family:
     Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+body[data-theme="midnight"] {
+  --ink: #050505;
+  --muted: #838383;
+  --line: #dfdfdf;
+  --dark-cell: #000000;
+  --light-cell: #606060;
+  --accent: #000000;
+  --accent-strong: #151515;
+  --white-piece: #a6ff00;
+  --black-piece: #18b9e8;
+  --king-on-white: #000000;
+  --king-on-black: #000000;
+  --capture-dot: #777777;
+  --selected-ring: rgba(24, 185, 232, 0.82);
+  --board-radius: clamp(28px, 4vw, 56px);
+  --board-shadow: 0 26px 70px rgba(0, 0, 0, 0.18);
+}
+
+body[data-theme="sand"] {
+  --ink: #201914;
+  --muted: #8b8077;
+  --line: #e7ded4;
+  --dark-cell: #c9af97;
+  --light-cell: #efe8df;
+  --accent: #000000;
+  --accent-strong: #1f1a16;
+  --white-piece: #ffffff;
+  --black-piece: #654b3b;
+  --king-on-white: #c9af97;
+  --king-on-black: #d6c1ad;
+  --capture-dot: #c9af97;
+  --selected-ring: rgba(101, 75, 59, 0.8);
+  --board-radius: clamp(28px, 4vw, 56px);
+  --board-shadow: 0 26px 70px rgba(101, 75, 59, 0.16);
+}
+
+body[data-theme="sky"] {
+  --ink: #254b5c;
+  --muted: #6f8791;
+  --line: #d8e5eb;
+  --dark-cell: #93c5d8;
+  --light-cell: #f2eee8;
+  --accent: #3e839f;
+  --accent-strong: #2f718d;
+  --white-piece: #ffffff;
+  --black-piece: #3f86a4;
+  --king-on-white: #93c5d8;
+  --king-on-black: #9fcfe0;
+  --capture-dot: #5ca5c0;
+  --selected-ring: rgba(62, 131, 159, 0.75);
+  --board-radius: clamp(28px, 4vw, 56px);
+  --board-shadow: 0 26px 70px rgba(147, 197, 216, 0.28);
+}
+
+body[data-theme="lime"] {
+  --ink: #101010;
+  --muted: #858585;
+  --line: #e1e1e1;
+  --dark-cell: #000000;
+  --light-cell: #606060;
+  --accent: #000000;
+  --accent-strong: #151515;
+  --white-piece: #a6ff00;
+  --black-piece: #18b9e8;
+  --king-on-white: #000000;
+  --king-on-black: #000000;
+  --capture-dot: #777777;
+  --selected-ring: rgba(166, 255, 0, 0.86);
+  --board-radius: clamp(28px, 4vw, 56px);
+  --board-shadow: 0 26px 70px rgba(166, 255, 0, 0.14);
 }
 
 * {
@@ -152,6 +230,61 @@ h1 {
   padding: 0 18px;
 }
 
+.style-picker {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  margin-top: 18px;
+}
+
+.style-swatch {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  min-height: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 50%;
+  padding: 0;
+  background: transparent;
+}
+
+.style-swatch::before {
+  position: absolute;
+  inset: -5px;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  content: "";
+}
+
+.style-swatch.is-selected::before {
+  border-color: currentColor;
+}
+
+.style-swatch span {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.style-swatch[data-theme="midnight"] {
+  color: #000000;
+}
+
+.style-swatch[data-theme="sand"] {
+  color: #c9af97;
+}
+
+.style-swatch[data-theme="sky"] {
+  color: #93c5d8;
+}
+
+.style-swatch[data-theme="lime"] {
+  color: #86d000;
+}
+
 .room-card,
 .player-strip,
 .score-card {
@@ -214,8 +347,10 @@ h1 {
   width: min(820px, calc(100vw - 32px), calc(100vh - 64px));
   aspect-ratio: 1;
   border: clamp(12px, 1.7vw, 22px) solid var(--dark-cell);
-  box-shadow: none;
+  border-radius: var(--board-radius);
+  box-shadow: var(--board-shadow);
   background: var(--dark-cell);
+  overflow: hidden;
 }
 
 .cell {
@@ -239,7 +374,7 @@ h1 {
 }
 
 .cell.selected {
-  outline: clamp(3px, 0.45vw, 5px) solid rgba(62, 131, 159, 0.75);
+  outline: clamp(3px, 0.45vw, 5px) solid var(--selected-ring);
   outline-offset: calc(clamp(3px, 0.45vw, 5px) * -1);
 }
 
@@ -252,7 +387,7 @@ h1 {
   width: 28%;
   aspect-ratio: 1;
   border-radius: 50%;
-  background: #5ca5c0;
+  background: var(--capture-dot);
   content: "";
 }
 
@@ -288,12 +423,12 @@ h1 {
   background: currentColor;
   -webkit-mask: url("/crown.svg") center / contain no-repeat;
   mask: url("/crown.svg") center / contain no-repeat;
-  color: var(--dark-cell);
+  color: var(--king-on-white);
   content: "";
 }
 
 .piece.black.king::after {
-  color: #9fcfe0;
+  color: var(--king-on-black);
 }
 
 .toast {
