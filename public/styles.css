@@ -1069,7 +1069,7 @@ body[data-screen="game"] .board {
   }
 
   body[data-screen="game"] .side-panel {
-    grid-row: 1;
+    grid-row: 3;
   }
 
   body[data-screen="game"] .board-shell {
@@ -1077,7 +1077,7 @@ body[data-screen="game"] .board {
   }
 
   body[data-screen="game"] .opponent-stack {
-    grid-row: 3;
+    grid-row: 1;
     position: static;
     transform: none;
     justify-self: start;
