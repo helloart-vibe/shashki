@@ -241,11 +241,20 @@ body[data-screen="game"] .theme-toggle {
   right: 250px;
 }
 
+.sound-toggle {
+  right: 91px;
+}
+
+body[data-screen="game"] .sound-toggle {
+  right: 307px;
+}
+
 .theme-toggle {
   position: fixed;
 }
 
-.theme-icon {
+.theme-icon,
+.sound-icon {
   position: absolute;
   width: 45px;
   height: 45px;
@@ -253,6 +262,26 @@ body[data-screen="game"] .theme-toggle {
     filter 160ms ease,
     opacity 160ms ease,
     transform 160ms ease;
+}
+
+.sound-on-icon {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.sound-off-icon {
+  opacity: 0;
+  transform: scale(0.72);
+}
+
+body[data-sound="off"] .sound-on-icon {
+  opacity: 0;
+  transform: scale(0.72);
+}
+
+body[data-sound="off"] .sound-off-icon {
+  opacity: 1;
+  transform: scale(1);
 }
 
 .sun-icon {
@@ -274,6 +303,10 @@ body[data-ui-theme="dark"] .moon-icon {
   filter: invert(1);
   opacity: 1;
   transform: scale(1) rotate(0deg);
+}
+
+body[data-ui-theme="dark"] .sound-icon {
+  filter: invert(1);
 }
 
 #roomInput {
@@ -907,6 +940,11 @@ body[data-screen="game"] .board {
     right: 16px;
   }
 
+  .sound-toggle {
+    top: 12px;
+    right: 67px;
+  }
+
   .site-footer {
     position: static;
     margin: 0 20px 20px;
@@ -946,6 +984,11 @@ body[data-screen="game"] .board {
   body[data-screen="game"] .theme-toggle {
     top: 62px;
     right: 16px;
+  }
+
+  body[data-screen="game"] .sound-toggle {
+    top: 62px;
+    right: 67px;
   }
 
   h1 {

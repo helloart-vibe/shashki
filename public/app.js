@@ -17,6 +17,7 @@ const joinForm = document.querySelector("#joinForm");
 const nameInput = document.querySelector("#nameInput");
 const roomInput = document.querySelector("#roomInput");
 const styleButtons = [...document.querySelectorAll(".style-swatch")];
+const soundToggle = document.querySelector("#soundToggle");
 const uiThemeToggle = document.querySelector("#uiThemeToggle");
 const copyLinkButton = document.querySelector("#copyLinkButton");
 const scoreCard = document.querySelector("#scoreCard");
@@ -42,8 +43,10 @@ const modalActions = document.querySelector("#modalActions");
 const files = ["a", "b", "c", "d", "e", "f", "g", "h"];
 const themeKey = "russian-checkers:theme";
 const uiThemeKey = "russian-checkers:ui-theme";
+const soundKey = "russian-checkers:sound";
 const themes = new Set(["midnight", "sand", "sky", "lime", "walnut"]);
 const uiThemes = new Set(["light", "dark"]);
+const soundStates = new Set(["on", "off"]);
 const moveSound = new Audio("/move.mp3");
 moveSound.preload = "auto";
 let room = null;
@@ -94,6 +97,23 @@ function toggleUiTheme() {
   applyUiTheme(nextTheme);
 }
 
+function normalizeSoundState(value) {
+  return soundStates.has(value) ? value : "on";
+}
+
+function applySoundState(value) {
+  const nextState = normalizeSoundState(value);
+  document.body.dataset.sound = nextState;
+  soundToggle.setAttribute("aria-label", nextState === "on" ? "Выключить звук" : "Включить звук");
+  moveSound.muted = nextState === "off";
+}
+
+function toggleSound() {
+  const nextState = document.body.dataset.sound === "off" ? "on" : "off";
+  localStorage.setItem(soundKey, nextState);
+  applySoundState(nextState);
+}
+
 function moveSoundKey(nextRoom = room) {
   if (!nextRoom?.game?.lastMove) return "";
   return `${nextRoom.code}:${JSON.stringify(nextRoom.game.lastMove)}`;
@@ -104,6 +124,7 @@ function rememberMoveSound(nextRoom = room) {
 }
 
 function playMoveSound(nextRoom = room) {
+  if (document.body.dataset.sound === "off") return;
   const nextKey = moveSoundKey(nextRoom);
   if (!nextKey || nextKey === lastMoveSoundKey) return;
 
@@ -830,6 +851,7 @@ for (const button of styleButtons) {
 }
 
 uiThemeToggle.addEventListener("click", toggleUiTheme);
+soundToggle.addEventListener("click", toggleSound);
 
 leaveRoomButton.addEventListener("click", () => {
   leaveRoom().catch(showError);
@@ -859,6 +881,7 @@ statusText.addEventListener("click", (event) => {
 nameInput.value = localStorage.getItem("russian-checkers:name") || "";
 applyTheme(localStorage.getItem(themeKey));
 applyUiTheme(localStorage.getItem(uiThemeKey));
+applySoundState(localStorage.getItem(soundKey));
 const initialRoom = new URLSearchParams(location.search).get("room");
 if (initialRoom) {
   const normalized = initialRoom.toUpperCase();
