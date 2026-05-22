@@ -707,6 +707,45 @@ body[data-screen="game"] .board {
   width: min(650px, calc(100vw - 32px), calc(100vh - 210px));
 }
 
+.board.is-shaking {
+  animation: board-shake 520ms cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+@keyframes board-shake {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+
+  12% {
+    transform: translate3d(-4px, 2px, 0) rotate(-0.45deg);
+  }
+
+  24% {
+    transform: translate3d(5px, -2px, 0) rotate(0.45deg);
+  }
+
+  36% {
+    transform: translate3d(-4px, -1px, 0) rotate(-0.35deg);
+  }
+
+  48% {
+    transform: translate3d(4px, 2px, 0) rotate(0.35deg);
+  }
+
+  60% {
+    transform: translate3d(-2px, 1px, 0) rotate(-0.2deg);
+  }
+
+  74% {
+    transform: translate3d(2px, -1px, 0) rotate(0.18deg);
+  }
+
+  88% {
+    transform: translate3d(-1px, 0, 0) rotate(-0.08deg);
+  }
+}
+
 .cell {
   position: relative;
   display: grid;
@@ -817,6 +856,7 @@ body[data-screen="game"] .board {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .board.is-shaking,
   .piece.is-arriving {
     animation: none;
   }

@@ -12,6 +12,7 @@ const gameActions = document.querySelector("#gameActions");
 const createRoomButton = document.querySelector("#createRoomButton");
 const leaveRoomButton = document.querySelector("#leaveRoomButton");
 const drawButton = document.querySelector("#drawButton");
+const shakeButton = document.querySelector("#shakeButton");
 const rematchButton = document.querySelector("#rematchButton");
 const joinForm = document.querySelector("#joinForm");
 const nameInput = document.querySelector("#nameInput");
@@ -138,6 +139,13 @@ function playRoomEnterSound() {
   if (document.body.dataset.sound === "off") return;
   roomEnterSound.currentTime = 0;
   roomEnterSound.play().catch(() => {});
+}
+
+function shakeBoard() {
+  boardEl.classList.remove("is-shaking");
+  void boardEl.offsetWidth;
+  boardEl.classList.add("is-shaking");
+  boardEl.addEventListener("animationend", () => boardEl.classList.remove("is-shaking"), { once: true });
 }
 
 function moveSoundKey(nextRoom = room) {
@@ -990,6 +998,8 @@ leaveRoomButton.addEventListener("click", () => {
 drawButton.addEventListener("click", () => {
   offerDraw().catch(showError);
 });
+
+shakeButton.addEventListener("click", shakeBoard);
 
 rematchButton.addEventListener("click", () => {
   offerRematch().catch(showError);
