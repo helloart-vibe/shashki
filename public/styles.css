@@ -428,6 +428,21 @@ body[data-screen="game"] .status {
   width: 220px;
 }
 
+.game-actions .shake-button {
+  width: 72px;
+  min-width: 72px;
+  min-height: 72px;
+  border-color: var(--button-secondary-border);
+  border-radius: 50%;
+  background:
+    url("/hand-fist-light.svg") center / 34px 34px no-repeat,
+    var(--button-secondary-bg);
+}
+
+.game-actions .shake-button:hover {
+  opacity: 0.9;
+}
+
 .style-picker {
   display: flex;
   gap: 16px;
@@ -1160,6 +1175,11 @@ body[data-screen="game"] .board {
 
   body[data-screen="game"] .game-actions button {
     width: 100%;
+  }
+
+  body[data-screen="game"] .game-actions .shake-button {
+    width: 72px;
+    min-width: 72px;
   }
 
   body[data-screen="game"] .match-card {

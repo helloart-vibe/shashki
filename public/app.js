@@ -999,6 +999,8 @@ drawButton.addEventListener("click", () => {
   offerDraw().catch(showError);
 });
 
+shakeButton.addEventListener("mouseenter", shakeBoard);
+shakeButton.addEventListener("focus", shakeBoard);
 shakeButton.addEventListener("click", shakeBoard);
 
 rematchButton.addEventListener("click", () => {
