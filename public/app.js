@@ -17,6 +17,7 @@ const joinForm = document.querySelector("#joinForm");
 const nameInput = document.querySelector("#nameInput");
 const roomInput = document.querySelector("#roomInput");
 const styleButtons = [...document.querySelectorAll(".style-swatch")];
+const uiThemeToggle = document.querySelector("#uiThemeToggle");
 const copyLinkButton = document.querySelector("#copyLinkButton");
 const scoreCard = document.querySelector("#scoreCard");
 const whiteNameEl = document.querySelector("#whiteName");
@@ -40,7 +41,9 @@ const modalActions = document.querySelector("#modalActions");
 
 const files = ["a", "b", "c", "d", "e", "f", "g", "h"];
 const themeKey = "russian-checkers:theme";
+const uiThemeKey = "russian-checkers:ui-theme";
 const themes = new Set(["midnight", "sand", "sky", "lime", "walnut"]);
+const uiThemes = new Set(["light", "dark"]);
 let room = null;
 let player = { color: "spectator", token: null };
 let selected = null;
@@ -67,6 +70,25 @@ function applyTheme(theme) {
 
 function selectedTheme() {
   return normalizeTheme(document.body.dataset.theme);
+}
+
+function normalizeUiTheme(theme) {
+  return uiThemes.has(theme) ? theme : "light";
+}
+
+function applyUiTheme(theme) {
+  const nextTheme = normalizeUiTheme(theme);
+  document.body.dataset.uiTheme = nextTheme;
+  uiThemeToggle.setAttribute(
+    "aria-label",
+    nextTheme === "dark" ? "Включить светлую тему" : "Включить темную тему",
+  );
+}
+
+function toggleUiTheme() {
+  const nextTheme = document.body.dataset.uiTheme === "dark" ? "light" : "dark";
+  localStorage.setItem(uiThemeKey, nextTheme);
+  applyUiTheme(nextTheme);
 }
 
 function storageKey(code) {
@@ -716,6 +738,8 @@ for (const button of styleButtons) {
   });
 }
 
+uiThemeToggle.addEventListener("click", toggleUiTheme);
+
 leaveRoomButton.addEventListener("click", () => {
   leaveRoom().catch(showError);
 });
@@ -743,6 +767,7 @@ statusText.addEventListener("click", (event) => {
 
 nameInput.value = localStorage.getItem("russian-checkers:name") || "";
 applyTheme(localStorage.getItem(themeKey));
+applyUiTheme(localStorage.getItem(uiThemeKey));
 const initialRoom = new URLSearchParams(location.search).get("room");
 if (initialRoom) {
   const normalized = initialRoom.toUpperCase();
