@@ -52,10 +52,12 @@ const moveSound = new Audio("/move.mp3");
 const promotionSound = new Audio("/promotion.mp3");
 const soundToggleEffect = new Audio("/sound-toggle.mp3");
 const themeToggleEffect = new Audio("/theme-toggle.mp3");
+const roomEnterSound = new Audio("/room-enter.mp3");
 moveSound.preload = "auto";
 promotionSound.preload = "auto";
 soundToggleEffect.preload = "auto";
 themeToggleEffect.preload = "auto";
+roomEnterSound.preload = "auto";
 let room = null;
 let player = { color: "spectator", token: null };
 let selected = null;
@@ -129,6 +131,12 @@ function toggleSound() {
   soundToggleEffect.play().catch(() => {});
   localStorage.setItem(soundKey, nextState);
   applySoundState(nextState);
+}
+
+function playRoomEnterSound() {
+  if (document.body.dataset.sound === "off") return;
+  roomEnterSound.currentTime = 0;
+  roomEnterSound.play().catch(() => {});
 }
 
 function moveSoundKey(nextRoom = room) {
@@ -617,6 +625,7 @@ async function createRoom() {
   history.replaceState(null, "", `/?room=${room.code}`);
   resetSelection();
   render();
+  playRoomEnterSound();
   startPolling();
 }
 
@@ -640,6 +649,7 @@ async function joinRoom(code) {
   history.replaceState(null, "", `/?room=${room.code}`);
   resetSelection();
   render();
+  playRoomEnterSound();
   startPolling();
 }
 
