@@ -691,7 +691,8 @@ body[data-screen="game"] .board {
   background: rgba(37, 75, 92, 0.18);
 }
 
-.modal-backdrop.result-backdrop {
+.modal-backdrop.result-backdrop,
+.modal-backdrop.soft-backdrop {
   backdrop-filter: blur(10px);
   background: rgba(255, 255, 255, 0.58);
 }
@@ -715,6 +716,15 @@ body[data-screen="game"] .board {
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
 }
 
+.soft-backdrop .modal {
+  width: min(520px, calc(100vw - 40px));
+  border: 0;
+  border-radius: 14px;
+  padding: 46px 44px 42px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+}
+
 .modal h2 {
   margin: 0;
   font-size: 28px;
@@ -729,6 +739,13 @@ body[data-screen="game"] .board {
   white-space: pre-line;
 }
 
+.soft-backdrop .modal h2 {
+  color: #000000;
+  font-size: clamp(30px, 3.2vw, 42px);
+  font-weight: 400;
+  line-height: 1.15;
+}
+
 .modal p {
   margin: 12px 0 0;
   color: var(--muted);
@@ -740,6 +757,13 @@ body[data-screen="game"] .board {
   display: none;
 }
 
+.soft-backdrop .modal p {
+  max-width: 360px;
+  margin: 18px auto 0;
+  color: #858585;
+  font-size: 18px;
+}
+
 .modal-actions {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -747,24 +771,28 @@ body[data-screen="game"] .board {
   margin-top: 22px;
 }
 
-.result-backdrop .modal-actions {
+.result-backdrop .modal-actions,
+.soft-backdrop .modal-actions {
   display: flex;
   justify-content: center;
   gap: 14px;
 }
 
-.result-backdrop .modal-actions button {
+.result-backdrop .modal-actions button,
+.soft-backdrop .modal-actions button {
   min-width: 150px;
   min-height: 58px;
   padding: 0 34px;
 }
 
-.result-backdrop .modal-actions button.secondary {
+.result-backdrop .modal-actions button.secondary,
+.soft-backdrop .modal-actions button.secondary {
   color: #000000;
   background: #eeeeee;
 }
 
-.result-backdrop .modal-actions button.secondary:hover {
+.result-backdrop .modal-actions button.secondary:hover,
+.soft-backdrop .modal-actions button.secondary:hover {
   background: #e2e2e2;
   opacity: 0.82;
 }

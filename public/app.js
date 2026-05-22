@@ -206,6 +206,7 @@ function closeModal(dismissCurrent = false) {
   if (dismissCurrent && activeModalKey) dismissedModalKeys.add(activeModalKey);
   modalBackdrop.hidden = true;
   modalBackdrop.classList.remove("result-backdrop");
+  modalBackdrop.classList.remove("soft-backdrop");
   modalActions.innerHTML = "";
 }
 
@@ -214,7 +215,9 @@ function showModal(key, title, text, actions) {
   if (activeModalKey === key && !modalBackdrop.hidden) return;
   activeModalKey = key;
   const isResultModal = key.startsWith("loss:") || key.startsWith("win:");
+  const isSoftModal = key.startsWith("draw:") || key.startsWith("resign:");
   modalBackdrop.classList.toggle("result-backdrop", isResultModal);
+  modalBackdrop.classList.toggle("soft-backdrop", isSoftModal);
   modalTitle.textContent = title;
   modalText.textContent = text;
   modalActions.innerHTML = "";
@@ -582,6 +585,7 @@ function maybeShowRoomModal() {
         },
         {
           label: "Отказаться",
+          className: "secondary",
           onClick: () => respondDraw(false).catch(showError),
         },
       ],
