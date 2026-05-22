@@ -803,7 +803,12 @@ async function respondDraw(accept) {
     body: JSON.stringify({ token: player.token, accept }),
   });
   room = payload.room;
+  if (accept) {
+    rememberMoveSound(room);
+    resetSelection();
+  }
   closeModal();
+  showToast(accept ? "Ничья принята. Новая партия началась." : "Ничья отклонена.");
   render();
 }
 

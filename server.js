@@ -375,13 +375,9 @@ async function handleApi(req, res) {
       }
 
       if (body.accept) {
-        room.game = {
-          ...room.game,
-          status: "finished",
-          winner: null,
-          drawAccepted: true,
-          message: "Ничья по соглашению",
-        };
+        room.score.white = (room.score.white || 0) + 1;
+        room.score.black = (room.score.black || 0) + 1;
+        room.game = CheckersRules.createGame();
       }
 
       room.drawOffer = null;
