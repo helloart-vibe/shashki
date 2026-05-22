@@ -256,8 +256,8 @@ body[data-screen="game"] .sound-toggle {
 .theme-icon,
 .sound-icon {
   position: absolute;
-  width: 45px;
-  height: 45px;
+  width: 30px;
+  height: 30px;
   transition:
     filter 160ms ease,
     opacity 160ms ease,
