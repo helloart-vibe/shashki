@@ -771,7 +771,7 @@ body[data-screen="game"] .board {
 }
 
 .piece.is-arriving {
-  animation: piece-arrive 220ms cubic-bezier(0.2, 0.85, 0.2, 1) both;
+  animation: piece-arrive 320ms cubic-bezier(0.2, 0.85, 0.2, 1) both;
 }
 
 @keyframes piece-arrive {
