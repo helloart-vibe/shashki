@@ -197,11 +197,12 @@ input::placeholder {
 
 body[data-screen="game"] .app {
   position: relative;
-  grid-template-columns: minmax(210px, 270px) 1fr;
+  grid-template-columns: 1fr;
   grid-template-rows: 1fr auto;
   gap: 48px 0;
   width: 100vw;
   max-width: none;
+  min-height: 100vh;
   padding: 72px 0 84px;
 }
 
@@ -212,10 +213,15 @@ body[data-screen="game"] .app {
 }
 
 body[data-screen="game"] .side-panel {
-  align-self: stretch;
+  position: absolute;
+  top: clamp(120px, 18vh, 190px);
+  left: clamp(36px, 6vw, 120px);
+  z-index: 2;
+  width: min(270px, 24vw);
+  align-self: auto;
   align-content: start;
   gap: 28px;
-  padding-top: 70px;
+  padding-top: 0;
 }
 
 .eyebrow {
@@ -661,6 +667,8 @@ body[data-screen="game"] .board {
   }
 
   body[data-screen="game"] .side-panel {
+    position: static;
+    width: auto;
     gap: 18px;
     padding-top: 0;
   }
