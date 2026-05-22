@@ -373,6 +373,10 @@ body[data-screen="game"] .room-card {
 }
 
 body[data-screen="game"] .player-strip {
+  position: fixed;
+  top: 28px;
+  right: 36px;
+  z-index: 8;
   display: flex;
   width: max-content;
   gap: 12px;
@@ -764,6 +768,11 @@ body[data-screen="game"] .board {
     width: auto;
     gap: 18px;
     padding-top: 0;
+  }
+
+  body[data-screen="game"] .player-strip {
+    top: 18px;
+    right: 16px;
   }
 
   h1 {
