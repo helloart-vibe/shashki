@@ -387,10 +387,14 @@ function renderStatus() {
 
   if (player.color !== "spectator") {
     const opponent = CheckersRules.opponent(player.color);
-    selfNameEl.textContent = `${player.name || displayPlayerName(player.color)} (вы)`;
+    const selfName = `${player.name || displayPlayerName(player.color)} (вы)`;
+    const opponentName = displayPlayerName(opponent);
+    selfNameEl.textContent = selfName;
+    selfNameEl.title = selfName;
     selfScoreEl.textContent = String(room.score?.[player.color] ?? 0);
     selfColorEl.textContent = colorLabel(player.color);
-    opponentNameEl.textContent = displayPlayerName(opponent);
+    opponentNameEl.textContent = opponentName;
+    opponentNameEl.title = opponentName;
     opponentScoreEl.textContent = String(room.score?.[opponent] ?? 0);
     opponentColorEl.textContent = colorLabel(opponent);
   }
