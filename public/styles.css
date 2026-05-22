@@ -693,6 +693,7 @@ body[data-screen="game"] .board-shell {
 .board {
   display: grid;
   grid-template-columns: repeat(8, 1fr);
+  grid-template-rows: repeat(8, 1fr);
   width: min(738px, calc(100vw - 29px), calc(100vh - 58px));
   aspect-ratio: 1;
   border: clamp(12px, 1.7vw, 22px) solid var(--dark-cell);
@@ -711,10 +712,10 @@ body[data-screen="game"] .board {
   display: grid;
   place-items: center;
   min-width: 0;
+  min-height: 0;
   border: 0;
   border-radius: 0;
   padding: 0;
-  aspect-ratio: 1;
   background: var(--light-cell);
 }
 
