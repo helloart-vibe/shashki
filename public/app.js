@@ -603,6 +603,7 @@ function handleCellClick(point) {
 }
 
 function showError(error) {
+  if (!room && boardEl.children.length === 0) render();
   statusText.textContent = error.message;
 }
 
@@ -678,6 +679,7 @@ if (initialRoom) {
   roomInput.value = normalized;
   if (saved?.name && !nameInput.value.trim()) nameInput.value = saved.name;
   if (saved?.token || nameInput.value.trim()) {
+    render();
     joinRoom(normalized).catch(showError);
   } else {
     render();
