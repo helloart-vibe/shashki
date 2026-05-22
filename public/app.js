@@ -212,7 +212,8 @@ function showModal(key, title, text, actions) {
   if (dismissedModalKeys.has(key)) return;
   if (activeModalKey === key && !modalBackdrop.hidden) return;
   activeModalKey = key;
-  modalBackdrop.classList.toggle("result-backdrop", key.startsWith("loss:"));
+  const isResultModal = key.startsWith("loss:") || key.startsWith("win:");
+  modalBackdrop.classList.toggle("result-backdrop", isResultModal);
   modalTitle.textContent = title;
   modalText.textContent = text;
   modalActions.innerHTML = "";
@@ -227,6 +228,27 @@ function showModal(key, title, text, actions) {
   }
 
   modalBackdrop.hidden = false;
+}
+
+function resultActions() {
+  return [
+    {
+      label: "Го еще",
+      className: "primary",
+      onClick: () => {
+        closeModal(true);
+        showToast("Реванш добавим следующим шагом.");
+      },
+    },
+    {
+      label: "Пока хватит",
+      className: "secondary",
+      onClick: () => {
+        closeModal(true);
+        leaveRoom().catch(showError);
+      },
+    },
+  ];
 }
 
 function resetSelection() {
@@ -512,21 +534,22 @@ async function leaveRoom() {
 function maybeShowRoomModal() {
   if (!room || player.color === "spectator") return;
 
+  if (room.game.status === "finished" && room.game.winner === player.color) {
+    showModal(
+      `win:${room.code}:${room.game.winner}:${room.version}`,
+      "Опа,\nты выиграл!",
+      "",
+      resultActions(),
+    );
+    return;
+  }
+
   if (room.game.status === "finished" && room.game.winner && room.game.winner !== player.color) {
     showModal(
       `loss:${room.code}:${room.game.winner}:${room.version}`,
       "Ту-ту-туу...\nТы проиграл",
       "",
-      [
-        {
-          label: "Го еще",
-          className: "primary",
-          onClick: () => {
-            closeModal(true);
-            showToast("Реванш добавим следующим шагом.");
-          },
-        },
-      ],
+      resultActions(),
     );
     return;
   }

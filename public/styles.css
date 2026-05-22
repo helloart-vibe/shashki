@@ -673,12 +673,22 @@ body[data-screen="game"] .board {
 .result-backdrop .modal-actions {
   display: flex;
   justify-content: center;
+  gap: 14px;
 }
 
 .result-backdrop .modal-actions button {
   min-width: 150px;
   min-height: 58px;
   padding: 0 34px;
+}
+
+.result-backdrop .modal-actions button.secondary {
+  color: #000000;
+  background: #eeeeee;
+}
+
+.result-backdrop .modal-actions button.secondary:hover {
+  background: #e2e2e2;
 }
 
 .modal-actions button:only-child {
