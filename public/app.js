@@ -27,6 +27,7 @@ const selfNameEl = document.querySelector("#selfName");
 const selfScoreEl = document.querySelector("#selfScore");
 const selfColorEl = document.querySelector("#selfColor");
 const thinkingText = document.querySelector("#thinkingText");
+const opponentThinkingText = document.querySelector("#opponentThinkingText");
 const opponentCard = document.querySelector("#opponentCard");
 const opponentNameEl = document.querySelector("#opponentName");
 const opponentScoreEl = document.querySelector("#opponentScore");
@@ -352,6 +353,7 @@ function renderStatus() {
     scoreCard.hidden = true;
     selfCard.hidden = true;
     thinkingText.hidden = true;
+    opponentThinkingText.hidden = true;
     opponentCard.hidden = true;
     closeModal();
     return;
@@ -392,21 +394,26 @@ function renderStatus() {
   if (room.game.status === "finished") {
     statusText.textContent = room.game.message;
     thinkingText.hidden = true;
+    opponentThinkingText.hidden = true;
   } else if (!room.players.white || !room.players.black) {
     setRoomStatus();
     thinkingText.hidden = false;
     thinkingText.textContent = "ждём второго игрока...";
+    opponentThinkingText.hidden = true;
   } else if (isMyTurn()) {
     setRoomStatus();
     thinkingText.hidden = false;
     thinkingText.textContent = "ваш ход";
+    opponentThinkingText.hidden = true;
   } else if (player.color === "spectator") {
     statusText.textContent = "Вы смотрите партию.";
     thinkingText.hidden = true;
+    opponentThinkingText.hidden = true;
   } else {
     setRoomStatus();
-    thinkingText.hidden = false;
-    thinkingText.textContent = "думает, как сходить...";
+    thinkingText.hidden = true;
+    opponentThinkingText.hidden = false;
+    opponentThinkingText.textContent = "думает, как сходить...";
   }
 
   maybeShowRoomModal();

@@ -469,6 +469,13 @@ body[data-screen="game"] .player-strip span {
   font-size: 14px;
 }
 
+.opponent-thinking {
+  margin: 14px 0 0;
+  font-weight: 400;
+  line-height: 1.25;
+  text-transform: none;
+}
+
 .opponent-card {
   position: absolute;
   top: 50%;
