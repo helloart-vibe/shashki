@@ -18,7 +18,7 @@
     <main class="app">
       <section class="side-panel">
         <div>
-          <h1>Создайте комнату</h1>
+          <h1 id="titleText">Создайте комнату</h1>
           <p class="status" id="statusText">или подключитесь по коду.</p>
         </div>
 
@@ -45,11 +45,6 @@
           </div>
         </div>
 
-        <div class="room-actions" id="gameActions" hidden>
-          <button id="drawButton" type="button">Ничья</button>
-          <button class="danger" id="leaveRoomButton" type="button">Выйти</button>
-        </div>
-
         <div class="room-card" id="roomCard" hidden>
           <div>
             <span>Комната</span>
@@ -73,6 +68,13 @@
           </div>
         </div>
 
+        <div class="match-card self-card" id="selfCard" hidden>
+          <span id="selfName">-</span>
+          <strong id="selfScore">0</strong>
+          <b id="selfColor">-</b>
+        </div>
+        <p class="thinking-text" id="thinkingText" hidden>думает, как сходить...</p>
+
         <div class="score-card" id="scoreCard" hidden>
           <div>
             <span>Белые</span>
@@ -89,6 +91,18 @@
       <section class="board-shell" aria-label="Игровая доска">
         <div class="board" id="board"></div>
       </section>
+
+      <div class="match-card opponent-card" id="opponentCard" hidden>
+        <span id="opponentName">-</span>
+        <strong id="opponentScore">0</strong>
+        <b id="opponentColor">-</b>
+      </div>
+
+      <div class="room-actions game-actions" id="gameActions" hidden>
+        <button class="danger" id="leaveRoomButton" type="button">Сдаться</button>
+        <button id="drawButton" type="button">Ничья</button>
+        <button id="rematchButton" type="button">Реванш</button>
+      </div>
     </main>
 
     <footer class="site-footer">

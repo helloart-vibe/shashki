@@ -1,4 +1,5 @@
 const boardEl = document.querySelector("#board");
+const titleText = document.querySelector("#titleText");
 const statusText = document.querySelector("#statusText");
 const roomCard = document.querySelector("#roomCard");
 const roomCodeEl = document.querySelector("#roomCode");
@@ -11,6 +12,7 @@ const gameActions = document.querySelector("#gameActions");
 const createRoomButton = document.querySelector("#createRoomButton");
 const leaveRoomButton = document.querySelector("#leaveRoomButton");
 const drawButton = document.querySelector("#drawButton");
+const rematchButton = document.querySelector("#rematchButton");
 const joinForm = document.querySelector("#joinForm");
 const nameInput = document.querySelector("#nameInput");
 const roomInput = document.querySelector("#roomInput");
@@ -20,6 +22,15 @@ const scoreCard = document.querySelector("#scoreCard");
 const whiteNameEl = document.querySelector("#whiteName");
 const blackNameEl = document.querySelector("#blackName");
 const scoreTextEl = document.querySelector("#scoreText");
+const selfCard = document.querySelector("#selfCard");
+const selfNameEl = document.querySelector("#selfName");
+const selfScoreEl = document.querySelector("#selfScore");
+const selfColorEl = document.querySelector("#selfColor");
+const thinkingText = document.querySelector("#thinkingText");
+const opponentCard = document.querySelector("#opponentCard");
+const opponentNameEl = document.querySelector("#opponentName");
+const opponentScoreEl = document.querySelector("#opponentScore");
+const opponentColorEl = document.querySelector("#opponentColor");
 const toastEl = document.querySelector("#toast");
 const modalBackdrop = document.querySelector("#modalBackdrop");
 const modalTitle = document.querySelector("#modalTitle");
@@ -85,6 +96,12 @@ function colorName(color) {
   return "наблюдатель";
 }
 
+function colorLabel(color) {
+  if (color === "white") return "БЕЛЫЕ";
+  if (color === "black") return "ЧЕРНЫЕ";
+  return "НАБЛЮДАТЕЛЬ";
+}
+
 function displayPlayerName(color) {
   return room?.playerNames?.[color] || (color === "white" ? "Белые" : "Черные");
 }
@@ -100,6 +117,10 @@ function getPlayerName() {
   nameInput.value = name;
   localStorage.setItem("russian-checkers:name", name);
   return name;
+}
+
+function setRoomStatus() {
+  statusText.innerHTML = `комната <span class="room-code-inline">${room.code}</span>`;
 }
 
 function pointKey(point) {
@@ -283,6 +304,8 @@ function renderBoard() {
 function renderStatus() {
   if (!room) {
     applyTheme(localStorage.getItem(themeKey));
+    document.body.dataset.screen = "lobby";
+    titleText.textContent = "Создайте комнату";
     statusText.textContent = "или подключитесь по коду.";
     playerColorEl.textContent = "не подключены";
     playerCountEl.textContent = "0/2";
@@ -292,19 +315,27 @@ function renderStatus() {
     playerStrip.hidden = true;
     roomCard.hidden = true;
     scoreCard.hidden = true;
+    selfCard.hidden = true;
+    thinkingText.hidden = true;
+    opponentCard.hidden = true;
     closeModal();
     return;
   }
 
   applyTheme(room.theme);
+  document.body.dataset.screen = "game";
+  titleText.textContent = "Идёт игра";
   lobbyActions.hidden = true;
   gameActions.hidden = false;
   playerStrip.hidden = false;
   leaveRoomButton.textContent =
     isRoomReady() && player.color !== "spectator" && room.game.status === "playing" ? "Сдаться" : "Выйти";
   drawButton.hidden = !(isRoomReady() && player.color !== "spectator" && room.game.status === "playing");
+  rematchButton.hidden = false;
   roomCard.hidden = false;
-  scoreCard.hidden = false;
+  scoreCard.hidden = true;
+  selfCard.hidden = player.color === "spectator";
+  opponentCard.hidden = player.color === "spectator";
   roomCodeEl.textContent = room.code;
   playerColorEl.textContent = colorName(player.color);
   playerCountEl.textContent = `${Number(room.players.white) + Number(room.players.black)}/2`;
@@ -313,16 +344,34 @@ function renderStatus() {
   blackNameEl.textContent = displayPlayerName("black");
   scoreTextEl.textContent = `${room.score?.white ?? 0}/${room.score?.black ?? 0}`;
 
+  if (player.color !== "spectator") {
+    const opponent = CheckersRules.opponent(player.color);
+    selfNameEl.textContent = `${player.name || displayPlayerName(player.color)} (вы)`;
+    selfScoreEl.textContent = String(room.score?.[player.color] ?? 0);
+    selfColorEl.textContent = colorLabel(player.color);
+    opponentNameEl.textContent = displayPlayerName(opponent);
+    opponentScoreEl.textContent = String(room.score?.[opponent] ?? 0);
+    opponentColorEl.textContent = colorLabel(opponent);
+  }
+
   if (room.game.status === "finished") {
     statusText.textContent = room.game.message;
+    thinkingText.hidden = true;
   } else if (!room.players.white || !room.players.black) {
-    statusText.textContent = `Вы играете за ${colorName(player.color)}. Отправьте ссылку второму игроку.`;
+    setRoomStatus();
+    thinkingText.hidden = false;
+    thinkingText.textContent = "ждём второго игрока...";
   } else if (isMyTurn()) {
-    statusText.textContent = "Ваш ход.";
+    setRoomStatus();
+    thinkingText.hidden = false;
+    thinkingText.textContent = "ваш ход";
   } else if (player.color === "spectator") {
     statusText.textContent = "Вы смотрите партию.";
+    thinkingText.hidden = true;
   } else {
-    statusText.textContent = "Ждем ход соперника.";
+    setRoomStatus();
+    thinkingText.hidden = false;
+    thinkingText.textContent = "думает, как сходить...";
   }
 
   maybeShowRoomModal();
@@ -598,6 +647,10 @@ leaveRoomButton.addEventListener("click", () => {
 
 drawButton.addEventListener("click", () => {
   offerDraw().catch(showError);
+});
+
+rematchButton.addEventListener("click", () => {
+  showToast("Реванш добавим следующим шагом.");
 });
 
 joinForm.addEventListener("submit", (event) => {
