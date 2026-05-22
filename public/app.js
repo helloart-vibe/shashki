@@ -57,12 +57,14 @@ const promotionSound = new Audio("/promotion.mp3");
 const soundToggleEffect = new Audio("/sound-toggle.mp3");
 const themeToggleEffect = new Audio("/theme-toggle.mp3");
 const roomEnterSound = new Audio("/room-enter.mp3");
+const secondPlayerOnlineSound = new Audio("/second-player-online.mp3");
 moveSound.preload = "auto";
 captureSound.preload = "auto";
 promotionSound.preload = "auto";
 soundToggleEffect.preload = "auto";
 themeToggleEffect.preload = "auto";
 roomEnterSound.preload = "auto";
+secondPlayerOnlineSound.preload = "auto";
 let room = null;
 let player = { color: "spectator", token: null };
 let selected = null;
@@ -150,12 +152,18 @@ function playRoomEnterSound() {
   roomEnterSound.play().catch(() => {});
 }
 
+function playSecondPlayerOnlineSound() {
+  if (document.body.dataset.sound === "off") return;
+  secondPlayerOnlineSound.currentTime = 0;
+  secondPlayerOnlineSound.play().catch(() => {});
+}
+
 function maybePlaySecondPlayerOnline(connectedPlayers) {
   if (!room) return;
   const isSameRoom = lastConnectedRoomCode === room.code;
   const previousCount = isSameRoom ? lastConnectedPlayers : null;
 
-  if (previousCount === 1 && connectedPlayers === 2) playRoomEnterSound();
+  if (previousCount === 1 && connectedPlayers === 2) playSecondPlayerOnlineSound();
 
   lastConnectedRoomCode = room.code;
   lastConnectedPlayers = connectedPlayers;
