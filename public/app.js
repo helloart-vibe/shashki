@@ -204,6 +204,7 @@ function showToast(message) {
 function closeModal(dismissCurrent = false) {
   if (dismissCurrent && activeModalKey) dismissedModalKeys.add(activeModalKey);
   modalBackdrop.hidden = true;
+  modalBackdrop.classList.remove("result-backdrop");
   modalActions.innerHTML = "";
 }
 
@@ -211,6 +212,7 @@ function showModal(key, title, text, actions) {
   if (dismissedModalKeys.has(key)) return;
   if (activeModalKey === key && !modalBackdrop.hidden) return;
   activeModalKey = key;
+  modalBackdrop.classList.toggle("result-backdrop", key.startsWith("loss:"));
   modalTitle.textContent = title;
   modalText.textContent = text;
   modalActions.innerHTML = "";
@@ -509,6 +511,25 @@ async function leaveRoom() {
 
 function maybeShowRoomModal() {
   if (!room || player.color === "spectator") return;
+
+  if (room.game.status === "finished" && room.game.winner && room.game.winner !== player.color) {
+    showModal(
+      `loss:${room.code}:${room.game.winner}:${room.version}`,
+      "Ту-ту-туу...\nТы проиграл",
+      "",
+      [
+        {
+          label: "Го еще",
+          className: "primary",
+          onClick: () => {
+            closeModal(true);
+            showToast("Реванш добавим следующим шагом.");
+          },
+        },
+      ],
+    );
+    return;
+  }
 
   if (room.drawOffer && room.drawOffer.from !== player.color && room.game.status === "playing") {
     showModal(
