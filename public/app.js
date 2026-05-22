@@ -49,7 +49,9 @@ const themes = new Set(["midnight", "sand", "sky", "lime", "walnut"]);
 const uiThemes = new Set(["light", "dark"]);
 const soundStates = new Set(["on", "off"]);
 const moveSound = new Audio("/move.mp3");
+const promotionSound = new Audio("/promotion.mp3");
 moveSound.preload = "auto";
+promotionSound.preload = "auto";
 let room = null;
 let player = { color: "spectator", token: null };
 let selected = null;
@@ -110,6 +112,7 @@ function applySoundState(value) {
   document.body.dataset.sound = nextState;
   soundToggle.setAttribute("aria-label", nextState === "on" ? "Выключить звук" : "Включить звук");
   moveSound.muted = nextState === "off";
+  promotionSound.muted = nextState === "off";
 }
 
 function toggleSound() {
@@ -129,7 +132,17 @@ function rememberMoveSound(nextRoom = room) {
   playedMoveSoundKeys = nextKey ? new Set([nextKey]) : new Set();
 }
 
-function playMoveSound(nextRoom = room) {
+function didMovePromote(previousRoom, nextRoom) {
+  const move = nextRoom?.game?.lastMove;
+  if (!previousRoom?.game?.board || !nextRoom?.game?.board || !move?.steps?.length) return false;
+
+  const fromPiece = previousRoom.game.board[move.from.r]?.[move.from.c];
+  const finalStep = move.steps[move.steps.length - 1];
+  const toPiece = nextRoom.game.board[finalStep.to.r]?.[finalStep.to.c];
+  return Boolean(fromPiece && !fromPiece.king && toPiece?.king);
+}
+
+function playGameSound(previousRoom, nextRoom = room) {
   if (document.body.dataset.sound === "off") return;
   const nextKey = moveSoundKey(nextRoom);
   if (!nextKey || nextKey === lastMoveSoundKey || playedMoveSoundKeys.has(nextKey)) return;
@@ -140,8 +153,9 @@ function playMoveSound(nextRoom = room) {
   if (now - lastMoveSoundAt < 180) return;
 
   lastMoveSoundAt = now;
-  moveSound.currentTime = 0;
-  moveSound.play().catch(() => {});
+  const sound = didMovePromote(previousRoom, nextRoom) ? promotionSound : moveSound;
+  sound.currentTime = 0;
+  sound.play().catch(() => {});
 }
 
 function storageKey(code) {
@@ -672,12 +686,13 @@ async function submitMove(move) {
   moveRequestPending = true;
 
   try {
+    const previousRoom = room;
     const payload = await api(`/api/rooms/${room.code}/move`, {
       method: "POST",
       body: JSON.stringify({ token: player.token, color: player.color, move }),
     });
     room = payload.room;
-    playMoveSound(room);
+    playGameSound(previousRoom, room);
     resetSelection();
     render();
   } finally {
@@ -876,9 +891,10 @@ function startPolling() {
       const payload = await api(`/api/rooms/${room.code}${tokenQuery}`);
       applyPlayerUpdate(payload.player);
       if (payload.room.version !== room.version) {
+        const previousRoom = room;
         const nextRoom = payload.room;
         room = payload.room;
-        playMoveSound(nextRoom);
+        playGameSound(previousRoom, nextRoom);
         render();
       }
     } catch (error) {
