@@ -292,11 +292,16 @@ body[data-screen="game"] .status {
 .game-actions {
   grid-column: 1 / -1;
   grid-row: 2;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(140px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: 12px;
+  justify-content: center;
   justify-self: center;
-  width: min(560px, 100%);
+  width: min(720px, 100%);
+}
+
+.game-actions button {
+  width: 220px;
 }
 
 .style-picker {
@@ -540,9 +545,8 @@ body[data-screen="game"] .player-strip span {
 
 .opponent-stack {
   position: absolute;
-  top: 50%;
+  top: calc(clamp(120px, 18vh, 190px) + 162px);
   right: clamp(36px, 6vw, 120px);
-  transform: translateY(-50%);
 }
 
 .score-text {
@@ -873,7 +877,10 @@ body[data-screen="game"] .board {
   }
 
   body[data-screen="game"] .game-actions {
-    grid-template-columns: 1fr;
+    width: 100%;
+  }
+
+  body[data-screen="game"] .game-actions button {
     width: 100%;
   }
 }
