@@ -68,6 +68,18 @@ body[data-theme="lime"] {
   --board-shadow: 0 26px 70px rgba(15, 77, 59, 0.18);
 }
 
+body[data-theme="walnut"] {
+  --dark-cell: #9d8062;
+  --light-cell: #d2c0aa;
+  --white-piece: #ffffff;
+  --black-piece: #302e2b;
+  --king-on-white: #9d8062;
+  --king-on-black: #9d8062;
+  --capture-dot: #d2c0aa;
+  --selected-ring: rgba(48, 46, 43, 0.78);
+  --board-shadow: 0 26px 70px rgba(157, 128, 98, 0.18);
+}
+
 * {
   box-sizing: border-box;
 }
@@ -319,6 +331,10 @@ body[data-screen="game"] .status {
 
 .style-swatch[data-theme="lime"] {
   color: #0f4d3b;
+}
+
+.style-swatch[data-theme="walnut"] {
+  color: #9d8062;
 }
 
 .room-card,

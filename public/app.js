@@ -39,7 +39,7 @@ const modalActions = document.querySelector("#modalActions");
 
 const files = ["a", "b", "c", "d", "e", "f", "g", "h"];
 const themeKey = "russian-checkers:theme";
-const themes = new Set(["midnight", "sand", "sky", "lime"]);
+const themes = new Set(["midnight", "sand", "sky", "lime", "walnut"]);
 let room = null;
 let player = { color: "spectator", token: null };
 let selected = null;

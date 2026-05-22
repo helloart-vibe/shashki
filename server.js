@@ -10,7 +10,7 @@ const PUBLIC_DIR = path.join(__dirname, "public");
 const APP_VERSION = "2026-05-21-sync-debug";
 const INSTANCE_ID = crypto.randomBytes(4).toString("hex");
 const rooms = new Map();
-const THEMES = new Set(["midnight", "sand", "sky", "lime"]);
+const THEMES = new Set(["midnight", "sand", "sky", "lime", "walnut"]);
 
 const mimeTypes = {
   ".html": "text/html; charset=utf-8",
