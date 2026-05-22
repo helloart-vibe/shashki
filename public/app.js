@@ -30,11 +30,13 @@ const selfNameEl = document.querySelector("#selfName");
 const selfScoreEl = document.querySelector("#selfScore");
 const selfColorEl = document.querySelector("#selfColor");
 const thinkingText = document.querySelector("#thinkingText");
+const selfCapturedPiecesEl = document.querySelector("#selfCapturedPieces");
 const opponentThinkingText = document.querySelector("#opponentThinkingText");
 const opponentCard = document.querySelector("#opponentCard");
 const opponentNameEl = document.querySelector("#opponentName");
 const opponentScoreEl = document.querySelector("#opponentScore");
 const opponentColorEl = document.querySelector("#opponentColor");
+const opponentCapturedPiecesEl = document.querySelector("#opponentCapturedPieces");
 const toastEl = document.querySelector("#toast");
 const modalBackdrop = document.querySelector("#modalBackdrop");
 const modalTitle = document.querySelector("#modalTitle");
@@ -75,6 +77,8 @@ let lastMoveSoundAt = 0;
 let moveRequestPending = false;
 let playedMoveSoundKeys = new Set();
 let boardMoveAnimation = null;
+let capturedPiecesSnapshot = null;
+let capturedPiecesRoomCode = "";
 const dismissedModalKeys = new Set();
 
 function normalizeTheme(theme) {
@@ -234,6 +238,60 @@ function queueMoveAnimation(previousRoom, nextRoom = room) {
     dx: from.c - to.c,
     dy: from.r - to.r,
   };
+}
+
+function capturedPiecesByColor() {
+  const remaining = { white: 0, black: 0 };
+  const board = room?.game?.board || [];
+
+  for (const row of board) {
+    for (const piece of row) {
+      if (piece?.color) remaining[piece.color] += 1;
+    }
+  }
+
+  return {
+    white: Math.max(0, 12 - remaining.black),
+    black: Math.max(0, 12 - remaining.white),
+  };
+}
+
+function renderCapturedPieces(container, ownerColor, capturedByColor) {
+  const count = capturedByColor[ownerColor] || 0;
+  const previousCount = capturedPiecesSnapshot?.[ownerColor] ?? count;
+  const capturedColor = CheckersRules.opponent(ownerColor);
+  container.hidden = count === 0 || player.color === "spectator";
+  container.innerHTML = "";
+
+  for (let index = 0; index < count; index += 1) {
+    const piece = document.createElement("span");
+    piece.className = `captured-piece ${capturedColor}`;
+    if (index >= previousCount) piece.classList.add("is-new");
+    container.append(piece);
+  }
+}
+
+function renderCapturedPiecesRows() {
+  if (!room || player.color === "spectator") {
+    selfCapturedPiecesEl.hidden = true;
+    opponentCapturedPiecesEl.hidden = true;
+    selfCapturedPiecesEl.innerHTML = "";
+    opponentCapturedPiecesEl.innerHTML = "";
+    capturedPiecesSnapshot = null;
+    capturedPiecesRoomCode = "";
+    return;
+  }
+
+  const capturedByColor = capturedPiecesByColor();
+  if (capturedPiecesRoomCode !== room.code) {
+    capturedPiecesSnapshot = { ...capturedByColor };
+    capturedPiecesRoomCode = room.code;
+  }
+
+  const opponent = CheckersRules.opponent(player.color);
+  renderCapturedPieces(selfCapturedPiecesEl, player.color, capturedByColor);
+  renderCapturedPieces(opponentCapturedPiecesEl, opponent, capturedByColor);
+  capturedPiecesSnapshot = { ...capturedByColor };
 }
 
 function storageKey(code) {
@@ -567,8 +625,14 @@ function renderStatus() {
     scoreCard.hidden = true;
     selfCard.hidden = true;
     thinkingText.hidden = true;
+    selfCapturedPiecesEl.hidden = true;
+    selfCapturedPiecesEl.innerHTML = "";
     opponentThinkingText.hidden = true;
+    opponentCapturedPiecesEl.hidden = true;
+    opponentCapturedPiecesEl.innerHTML = "";
     opponentCard.hidden = true;
+    capturedPiecesSnapshot = null;
+    capturedPiecesRoomCode = "";
     closeModal();
     return;
   }
@@ -594,6 +658,7 @@ function renderStatus() {
   scoreCard.hidden = true;
   selfCard.hidden = player.color === "spectator";
   opponentCard.hidden = player.color === "spectator";
+  renderCapturedPiecesRows();
   roomCodeEl.textContent = room.code;
   playerColorEl.textContent = colorName(player.color);
   const connectedPlayers = Number(room.players.white) + Number(room.players.black);
