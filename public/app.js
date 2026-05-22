@@ -237,7 +237,7 @@ function showModal(key, title, text, actions) {
   if (activeModalKey === key && !modalBackdrop.hidden) return;
   activeModalKey = key;
   const isResultModal = key.startsWith("loss:") || key.startsWith("win:");
-  const isSoftModal = key.startsWith("draw:") || key.startsWith("resign:");
+  const isSoftModal = key.startsWith("draw:") || key.startsWith("resign:") || key.startsWith("rematch:");
   modalBackdrop.classList.toggle("result-backdrop", isResultModal);
   modalBackdrop.classList.toggle("soft-backdrop", isSoftModal);
   modalTitle.textContent = title;
@@ -263,7 +263,7 @@ function resultActions() {
       className: "primary",
       onClick: () => {
         closeModal(true);
-        showToast("Реванш добавим следующим шагом.");
+        offerRematch().catch(showError);
       },
     },
     {
@@ -394,7 +394,14 @@ function renderStatus() {
   leaveRoomButton.textContent =
     isRoomReady() && player.color !== "spectator" && room.game.status === "playing" ? "Сдаться" : "Выйти";
   drawButton.hidden = !(isRoomReady() && player.color !== "spectator" && room.game.status === "playing");
-  rematchButton.hidden = !(room.game.status === "finished" && room.game.winner);
+  rematchButton.hidden = !(
+    isRoomReady() &&
+    player.color !== "spectator" &&
+    room.game.status === "finished" &&
+    room.game.winner
+  );
+  rematchButton.disabled = room.rematchOffer?.from === player.color;
+  rematchButton.textContent = rematchButton.disabled ? "Ждём ответ" : "Реванш";
   roomCard.hidden = false;
   scoreCard.hidden = true;
   selfCard.hidden = player.color === "spectator";
@@ -475,6 +482,12 @@ async function api(path, options = {}) {
   return payload;
 }
 
+function applyPlayerUpdate(nextPlayer) {
+  if (!nextPlayer || !nextPlayer.token) return;
+  player = { ...player, ...nextPlayer };
+  if (room) saveSession(room.code);
+}
+
 async function createRoom() {
   const name = getPlayerName();
   if (!name) return;
@@ -485,6 +498,7 @@ async function createRoom() {
   });
   room = payload.room;
   player = payload.player;
+  applyPlayerUpdate(payload.player);
   saveSession(room.code);
   history.replaceState(null, "", `/?room=${room.code}`);
   resetSelection();
@@ -506,6 +520,7 @@ async function joinRoom(code) {
   });
   room = payload.room;
   player = payload.player;
+  applyPlayerUpdate(payload.player);
   saveSession(room.code);
   history.replaceState(null, "", `/?room=${room.code}`);
   resetSelection();
@@ -532,6 +547,31 @@ async function respondDraw(accept) {
   });
   room = payload.room;
   closeModal();
+  render();
+}
+
+async function offerRematch() {
+  if (!room || !player.token) return;
+  const payload = await api(`/api/rooms/${room.code}/rematch-offer`, {
+    method: "POST",
+    body: JSON.stringify({ token: player.token }),
+  });
+  room = payload.room;
+  showToast("Предложение реванша отправлено.");
+  render();
+}
+
+async function respondRematch(accept) {
+  if (!room || !player.token) return;
+  const payload = await api(`/api/rooms/${room.code}/rematch-respond`, {
+    method: "POST",
+    body: JSON.stringify({ token: player.token, accept }),
+  });
+  room = payload.room;
+  applyPlayerUpdate(payload.player);
+  resetSelection();
+  closeModal(true);
+  showToast(accept ? "Реванш начался." : "Реванш отклонён.");
   render();
 }
 
@@ -574,6 +614,47 @@ async function leaveRoom() {
 function maybeShowRoomModal() {
   if (!room || player.color === "spectator") return;
 
+  if (room.rematchOffer && room.rematchOffer.from !== player.color && room.game.status === "finished") {
+    showModal(
+      `rematch:${room.code}:${room.rematchOffer.from}:${room.version}`,
+      "Реванш?",
+      `${room.rematchOffer.name} предлагает сыграть ещё раз.`,
+      [
+        {
+          label: "Согласиться",
+          className: "primary",
+          onClick: () => respondRematch(true).catch(showError),
+        },
+        {
+          label: "Отказаться",
+          className: "secondary",
+          onClick: () => respondRematch(false).catch(showError),
+        },
+      ],
+    );
+    return;
+  }
+
+  if (
+    room.game.status === "finished" &&
+    room.game.resignedBy &&
+    room.game.resignedBy !== player.color
+  ) {
+    showModal(
+      `resign:${room.code}:${room.game.resignedBy}:${room.version}`,
+      "Ваш соперник сдался",
+      "Партия завершена, очко записано в ваш счёт.",
+      [
+        {
+          label: "Понятно",
+          className: "primary",
+          onClick: () => closeModal(true),
+        },
+      ],
+    );
+    return;
+  }
+
   if (room.game.status === "finished" && room.game.winner === player.color) {
     showModal(
       `win:${room.code}:${room.game.winner}:${room.version}`,
@@ -613,25 +694,6 @@ function maybeShowRoomModal() {
       ],
     );
     return;
-  }
-
-  if (
-    room.game.status === "finished" &&
-    room.game.resignedBy &&
-    room.game.resignedBy !== player.color
-  ) {
-    showModal(
-      `resign:${room.code}:${room.game.resignedBy}:${room.version}`,
-      "Ваш соперник сдался",
-      "Партия завершена, очко записано в ваш счёт.",
-      [
-        {
-          label: "Понятно",
-          className: "primary",
-          onClick: () => closeModal(true),
-        },
-      ],
-    );
   }
 }
 
@@ -711,7 +773,9 @@ function startPolling() {
     if (!room) return;
 
     try {
-      const payload = await api(`/api/rooms/${room.code}`);
+      const tokenQuery = player.token ? `?token=${encodeURIComponent(player.token)}` : "";
+      const payload = await api(`/api/rooms/${room.code}${tokenQuery}`);
+      applyPlayerUpdate(payload.player);
       if (payload.room.version !== room.version) {
         room = payload.room;
         render();
@@ -749,7 +813,7 @@ drawButton.addEventListener("click", () => {
 });
 
 rematchButton.addEventListener("click", () => {
-  showToast("Реванш добавим следующим шагом.");
+  offerRematch().catch(showError);
 });
 
 joinForm.addEventListener("submit", (event) => {

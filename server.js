@@ -53,6 +53,7 @@ function publicRoom(room) {
     playerNames: room.playerNames,
     score: room.score,
     drawOffer: room.drawOffer,
+    rematchOffer: room.rematchOffer,
     theme: cleanTheme(room.theme),
     updatedAt: room.updatedAt,
     server: {
@@ -86,6 +87,7 @@ function createRoom(name, theme) {
       black: 0,
     },
     drawOffer: null,
+    rematchOffer: null,
     theme: cleanTheme(theme),
     waiters: new Set(),
     updatedAt: Date.now(),
@@ -100,6 +102,52 @@ function touch(room) {
   room.updatedAt = Date.now();
   for (const waiter of room.waiters) waiter();
   room.waiters.clear();
+}
+
+function playerForToken(room, token) {
+  const color = ["white", "black"].find((candidate) => room.players[candidate] === token);
+  if (!color) return null;
+  return { color, token, name: room.playerNames[color] };
+}
+
+function awardWinner(room, winner) {
+  if (!winner || room.game.scoredWinner) return;
+  room.score[winner] = (room.score[winner] || 0) + 1;
+  room.game = {
+    ...room.game,
+    scoredWinner: winner,
+  };
+}
+
+function startRematch(room) {
+  const currentPlayers = ["white", "black"].map((color) => ({
+    token: room.players[color],
+    name: room.playerNames[color],
+    score: room.score[color] || 0,
+  }));
+
+  if (currentPlayers.some((item) => !item.token)) return false;
+
+  const firstIsWhite = crypto.randomInt(2) === 0;
+  const whitePlayer = firstIsWhite ? currentPlayers[0] : currentPlayers[1];
+  const blackPlayer = firstIsWhite ? currentPlayers[1] : currentPlayers[0];
+
+  room.players = {
+    white: whitePlayer.token,
+    black: blackPlayer.token,
+  };
+  room.playerNames = {
+    white: whitePlayer.name,
+    black: blackPlayer.name,
+  };
+  room.score = {
+    white: whitePlayer.score,
+    black: blackPlayer.score,
+  };
+  room.game = CheckersRules.createGame();
+  room.drawOffer = null;
+  room.rematchOffer = null;
+  return true;
 }
 
 function json(res, status, payload) {
@@ -220,16 +268,17 @@ async function handleApi(req, res) {
     if (req.method === "POST" && parts.length === 4 && parts[3] === "join") {
       const body = await readBody(req);
       const name = cleanName(body.name);
-      const existingColor = body.token
-        ? ["white", "black"].find((color) => room.players[color] === body.token)
-        : null;
+      const existingPlayer = body.token ? playerForToken(room, body.token) : null;
 
-      if (existingColor) {
-        if (name) room.playerNames[existingColor] = name;
+      if (existingPlayer) {
+        if (name) {
+          room.playerNames[existingPlayer.color] = name;
+          existingPlayer.name = name;
+        }
         touch(room);
         json(res, 200, {
           room: publicRoom(room),
-          player: { color: existingColor, token: body.token, name: room.playerNames[existingColor] },
+          player: existingPlayer,
         });
         return;
       }
@@ -260,7 +309,7 @@ async function handleApi(req, res) {
 
     if (req.method === "POST" && parts.length === 4 && parts[3] === "leave") {
       const body = await readBody(req);
-      const color = ["white", "black"].find((candidate) => room.players[candidate] === body.token);
+      const color = playerForToken(room, body.token)?.color;
 
       if (!color) {
         json(res, 200, { room: publicRoom(room) });
@@ -276,11 +325,12 @@ async function handleApi(req, res) {
           resignedBy: color,
           message: `${color === "white" ? "Белые" : "Черные"} сдались`,
         };
-        room.score[winner] += 1;
+        awardWinner(room, winner);
       }
 
       room.players[color] = null;
       room.drawOffer = null;
+      room.rematchOffer = null;
       touch(room);
       json(res, 200, { room: publicRoom(room) });
       return;
@@ -288,7 +338,7 @@ async function handleApi(req, res) {
 
     if (req.method === "POST" && parts.length === 4 && parts[3] === "draw-offer") {
       const body = await readBody(req);
-      const color = ["white", "black"].find((candidate) => room.players[candidate] === body.token);
+      const color = playerForToken(room, body.token)?.color;
 
       if (!color) {
         json(res, 403, { error: "Нет прав предложить ничью" });
@@ -304,6 +354,7 @@ async function handleApi(req, res) {
         from: color,
         name: room.playerNames[color] || (color === "white" ? "Белые" : "Черные"),
       };
+      room.rematchOffer = null;
       touch(room);
       json(res, 200, { room: publicRoom(room) });
       return;
@@ -311,7 +362,7 @@ async function handleApi(req, res) {
 
     if (req.method === "POST" && parts.length === 4 && parts[3] === "draw-respond") {
       const body = await readBody(req);
-      const color = ["white", "black"].find((candidate) => room.players[candidate] === body.token);
+      const color = playerForToken(room, body.token)?.color;
 
       if (!color) {
         json(res, 403, { error: "Нет прав ответить на ничью" });
@@ -334,8 +385,64 @@ async function handleApi(req, res) {
       }
 
       room.drawOffer = null;
+      room.rematchOffer = null;
       touch(room);
       json(res, 200, { room: publicRoom(room) });
+      return;
+    }
+
+    if (req.method === "POST" && parts.length === 4 && parts[3] === "rematch-offer") {
+      const body = await readBody(req);
+      const color = playerForToken(room, body.token)?.color;
+
+      if (!color) {
+        json(res, 403, { error: "Нет прав предложить реванш" });
+        return;
+      }
+
+      if (room.game.status !== "finished" || !room.game.winner || !isRoomReady(room)) {
+        json(res, 409, { error: "Реванш можно предложить после завершения партии" });
+        return;
+      }
+
+      room.rematchOffer = {
+        from: color,
+        name: room.playerNames[color] || (color === "white" ? "Белые" : "Черные"),
+      };
+      room.drawOffer = null;
+      touch(room);
+      json(res, 200, { room: publicRoom(room) });
+      return;
+    }
+
+    if (req.method === "POST" && parts.length === 4 && parts[3] === "rematch-respond") {
+      const body = await readBody(req);
+      const currentPlayer = playerForToken(room, body.token);
+
+      if (!currentPlayer) {
+        json(res, 403, { error: "Нет прав ответить на реванш" });
+        return;
+      }
+
+      if (!room.rematchOffer || room.rematchOffer.from === currentPlayer.color) {
+        json(res, 409, { error: "Нет предложения реванша" });
+        return;
+      }
+
+      if (body.accept) {
+        if (!startRematch(room)) {
+          json(res, 409, { error: "Реванш начнется, когда оба игрока будут в комнате" });
+          return;
+        }
+      } else {
+        room.rematchOffer = null;
+      }
+
+      touch(room);
+      json(res, 200, {
+        room: publicRoom(room),
+        player: playerForToken(room, body.token),
+      });
       return;
     }
 
@@ -360,6 +467,7 @@ async function handleApi(req, res) {
       }
 
       room.game = result.game;
+      if (room.game.status === "finished" && room.game.winner) awardWinner(room, room.game.winner);
       touch(room);
       json(res, 200, { room: publicRoom(room) });
       return;
@@ -367,20 +475,26 @@ async function handleApi(req, res) {
 
     if (req.method === "GET" && parts.length === 3) {
       const since = Number(url.searchParams.get("since") || 0);
+      const token = url.searchParams.get("token");
+      const responsePayload = () => {
+        const payload = { room: publicRoom(room) };
+        if (token) payload.player = playerForToken(room, token);
+        return payload;
+      };
 
       if (!Number.isFinite(since) || room.version > since) {
-        json(res, 200, { room: publicRoom(room) });
+        json(res, 200, responsePayload());
         return;
       }
 
       const timeout = setTimeout(() => {
         room.waiters.delete(resolveWait);
-        json(res, 200, { room: publicRoom(room) });
+        json(res, 200, responsePayload());
       }, 25000);
 
       function resolveWait() {
         clearTimeout(timeout);
-        json(res, 200, { room: publicRoom(room) });
+        json(res, 200, responsePayload());
       }
 
       room.waiters.add(resolveWait);
