@@ -150,6 +150,7 @@ function renderBoard() {
   const board = room?.game.board || CheckersRules.createGame().board;
   const targets = nextTargets();
   const forcedTargets = forcedCaptureTargets();
+  const forcedCaptureActive = hasForcedCapture();
   const selectable = new Set();
   const { rows, cols } = boardPointsForPlayer();
   const displaySelected = selectedDisplayPoint();
@@ -188,11 +189,13 @@ function renderBoard() {
 
       const waitingOwnPiece =
         room && !isRoomReady() && piece && piece.color === player.color && room.game.status === "playing";
+      const ownPieceDuringForcedCapture = isMyTurn() && forcedCaptureActive && piece?.color === player.color;
 
       if (waitingOwnPiece) cell.classList.add("waiting-piece");
       cell.disabled =
         !room ||
         (!waitingOwnPiece &&
+          !ownPieceDuringForcedCapture &&
           !selectable.has(key) &&
           !targets.has(key) &&
           !(showForcedCaptures && forcedTargets.has(key)));
