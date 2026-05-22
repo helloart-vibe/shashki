@@ -345,6 +345,7 @@ function renderStatus() {
     statusText.textContent = "или подключитесь по коду.";
     playerColorEl.textContent = "не подключены";
     playerCountEl.textContent = "0/2";
+    playerStrip.classList.remove("is-online", "is-waiting");
     turnText.textContent = "-";
     lobbyActions.hidden = false;
     gameActions.hidden = true;
@@ -375,7 +376,10 @@ function renderStatus() {
   opponentCard.hidden = player.color === "spectator";
   roomCodeEl.textContent = room.code;
   playerColorEl.textContent = colorName(player.color);
-  playerCountEl.textContent = `${Number(room.players.white) + Number(room.players.black)}/2`;
+  const connectedPlayers = Number(room.players.white) + Number(room.players.black);
+  playerCountEl.textContent = `${connectedPlayers}/2`;
+  playerStrip.classList.toggle("is-online", connectedPlayers === 2);
+  playerStrip.classList.toggle("is-waiting", connectedPlayers < 2);
   turnText.textContent = room.game.turn === "white" ? "белые" : "черные";
   whiteNameEl.textContent = displayPlayerName("white");
   blackNameEl.textContent = displayPlayerName("black");

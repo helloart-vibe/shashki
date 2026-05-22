@@ -378,12 +378,30 @@ body[data-screen="game"] .player-strip {
   right: 36px;
   z-index: 8;
   display: flex;
+  align-items: center;
   width: max-content;
-  gap: 12px;
+  gap: 16px;
   border-color: #000000;
   border-radius: 999px;
-  padding: 8px 18px;
+  padding: 8px 18px 8px 17px;
   background: #ffffff;
+}
+
+body[data-screen="game"] .player-strip::before {
+  display: block;
+  width: 12px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #ff3b30;
+  content: "";
+}
+
+body[data-screen="game"] .player-strip.is-online::before {
+  background: #20c997;
+}
+
+body[data-screen="game"] .player-strip.is-waiting::before {
+  background: #ff3b30;
 }
 
 body[data-screen="game"] .player-strip > div:first-child,
