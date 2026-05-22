@@ -961,6 +961,7 @@ body[data-screen="game"] .board {
 @media (max-width: 820px) {
   .site-header {
     top: 18px;
+    left: 28px;
   }
 
   .theme-toggle {
@@ -975,14 +976,15 @@ body[data-screen="game"] .board {
 
   .site-footer {
     position: static;
-    margin: 0 20px 20px;
+    margin: 0 28px 24px;
   }
 
   .app {
     grid-template-columns: 1fr;
     align-items: start;
-    gap: 24px;
-    padding: 72px 0 28px;
+    gap: 28px;
+    width: min(560px, calc(100vw - 56px));
+    padding: 92px 0 28px;
   }
 
   body[data-screen="game"] .app {
@@ -994,7 +996,7 @@ body[data-screen="game"] .board {
   }
 
   .side-panel {
-    gap: 24px;
+    gap: 22px;
   }
 
   body[data-screen="game"] .side-panel {
@@ -1020,19 +1022,38 @@ body[data-screen="game"] .board {
   }
 
   h1 {
-    font-size: clamp(38px, 14vw, 64px);
+    font-size: clamp(42px, 12vw, 58px);
+    line-height: 1.04;
   }
 
   .status {
     min-height: auto;
+    margin-top: 16px;
     font-size: 18px;
   }
 
+  .room-actions,
+  .join-form {
+    gap: 14px;
+  }
+
+  .join-form {
+    grid-template-columns: 1fr;
+  }
+
+  .join-form button {
+    width: 100%;
+  }
+
   .style-picker {
-    margin-top: 28px;
+    gap: 18px;
+    justify-content: flex-start;
+    margin-top: 38px;
   }
 
   .board {
+    justify-self: center;
+    width: min(100%, 520px);
     border-width: 6px;
   }
 
@@ -1068,12 +1089,19 @@ body[data-screen="game"] .board {
 }
 
 @media (max-width: 460px) {
-  .join-form,
   .player-strip,
   .room-card,
   .score-card,
   .modal-actions {
     grid-template-columns: 1fr;
+  }
+
+  .app {
+    width: min(100%, calc(100vw - 40px));
+  }
+
+  h1 {
+    font-size: clamp(40px, 13vw, 52px);
   }
 
   .score-card > div:last-child {
