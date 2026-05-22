@@ -50,8 +50,12 @@ const uiThemes = new Set(["light", "dark"]);
 const soundStates = new Set(["on", "off"]);
 const moveSound = new Audio("/move.mp3");
 const promotionSound = new Audio("/promotion.mp3");
+const soundToggleEffect = new Audio("/sound-toggle.mp3");
+const themeToggleEffect = new Audio("/theme-toggle.mp3");
 moveSound.preload = "auto";
 promotionSound.preload = "auto";
+soundToggleEffect.preload = "auto";
+themeToggleEffect.preload = "auto";
 let room = null;
 let player = { color: "spectator", token: null };
 let selected = null;
@@ -99,6 +103,10 @@ function applyUiTheme(theme) {
 
 function toggleUiTheme() {
   const nextTheme = document.body.dataset.uiTheme === "dark" ? "light" : "dark";
+  if (document.body.dataset.sound !== "off") {
+    themeToggleEffect.currentTime = 0;
+    themeToggleEffect.play().catch(() => {});
+  }
   localStorage.setItem(uiThemeKey, nextTheme);
   applyUiTheme(nextTheme);
 }
@@ -117,6 +125,8 @@ function applySoundState(value) {
 
 function toggleSound() {
   const nextState = document.body.dataset.sound === "off" ? "on" : "off";
+  soundToggleEffect.currentTime = 0;
+  soundToggleEffect.play().catch(() => {});
   localStorage.setItem(soundKey, nextState);
   applySoundState(nextState);
 }
