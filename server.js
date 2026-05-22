@@ -27,6 +27,11 @@ function playerToken() {
   return crypto.randomBytes(16).toString("hex");
 }
 
+function cleanName(name) {
+  const value = String(name || "").trim().replace(/\s+/g, " ");
+  return value.slice(0, 24);
+}
+
 function isRoomReady(room) {
   return Boolean(room.players.white && room.players.black);
 }
@@ -40,6 +45,9 @@ function publicRoom(room) {
       white: Boolean(room.players.white),
       black: Boolean(room.players.black),
     },
+    playerNames: room.playerNames,
+    score: room.score,
+    drawOffer: room.drawOffer,
     updatedAt: room.updatedAt,
     server: {
       version: APP_VERSION,
@@ -49,7 +57,7 @@ function publicRoom(room) {
   };
 }
 
-function createRoom() {
+function createRoom(name) {
   let code = roomCode();
   while (rooms.has(code)) code = roomCode();
 
@@ -63,6 +71,15 @@ function createRoom() {
       white: color === "white" ? token : null,
       black: color === "black" ? token : null,
     },
+    playerNames: {
+      white: color === "white" ? name : "",
+      black: color === "black" ? name : "",
+    },
+    score: {
+      white: 0,
+      black: 0,
+    },
+    drawOffer: null,
     waiters: new Set(),
     updatedAt: Date.now(),
   };
@@ -166,10 +183,17 @@ async function handleApi(req, res) {
     }
 
     if (req.method === "POST" && url.pathname === "/api/rooms") {
-      const { room, player } = createRoom();
+      const body = await readBody(req);
+      const name = cleanName(body.name);
+      if (!name) {
+        json(res, 400, { error: "Введите имя" });
+        return;
+      }
+
+      const { room, player } = createRoom(name);
       json(res, 201, {
         room: publicRoom(room),
-        player,
+        player: { ...player, name },
       });
       return;
     }
@@ -188,32 +212,41 @@ async function handleApi(req, res) {
 
     if (req.method === "POST" && parts.length === 4 && parts[3] === "join") {
       const body = await readBody(req);
+      const name = cleanName(body.name);
       const existingColor = body.token
         ? ["white", "black"].find((color) => room.players[color] === body.token)
         : null;
 
       if (existingColor) {
+        if (name) room.playerNames[existingColor] = name;
+        touch(room);
         json(res, 200, {
           room: publicRoom(room),
-          player: { color: existingColor, token: body.token },
+          player: { color: existingColor, token: body.token, name: room.playerNames[existingColor] },
         });
         return;
       }
 
       const color = ["white", "black"].find((candidate) => !room.players[candidate]);
       if (color) {
+        if (!name) {
+          json(res, 400, { error: "Введите имя" });
+          return;
+        }
+
         room.players[color] = playerToken();
+        room.playerNames[color] = name;
         touch(room);
         json(res, 200, {
           room: publicRoom(room),
-          player: { color, token: room.players[color] },
+          player: { color, token: room.players[color], name },
         });
         return;
       }
 
       json(res, 200, {
         room: publicRoom(room),
-        player: { color: "spectator", token: null },
+        player: { color: "spectator", token: null, name: name || "Наблюдатель" },
       });
       return;
     }
@@ -228,15 +261,72 @@ async function handleApi(req, res) {
       }
 
       if (room.game.status === "playing" && isRoomReady(room)) {
+        const winner = CheckersRules.opponent(color);
         room.game = {
           ...room.game,
           status: "finished",
-          winner: CheckersRules.opponent(color),
+          winner,
+          resignedBy: color,
           message: `${color === "white" ? "Белые" : "Черные"} сдались`,
         };
+        room.score[winner] += 1;
       }
 
       room.players[color] = null;
+      room.drawOffer = null;
+      touch(room);
+      json(res, 200, { room: publicRoom(room) });
+      return;
+    }
+
+    if (req.method === "POST" && parts.length === 4 && parts[3] === "draw-offer") {
+      const body = await readBody(req);
+      const color = ["white", "black"].find((candidate) => room.players[candidate] === body.token);
+
+      if (!color) {
+        json(res, 403, { error: "Нет прав предложить ничью" });
+        return;
+      }
+
+      if (room.game.status !== "playing" || !isRoomReady(room)) {
+        json(res, 409, { error: "Ничью можно предложить только во время партии" });
+        return;
+      }
+
+      room.drawOffer = {
+        from: color,
+        name: room.playerNames[color] || (color === "white" ? "Белые" : "Черные"),
+      };
+      touch(room);
+      json(res, 200, { room: publicRoom(room) });
+      return;
+    }
+
+    if (req.method === "POST" && parts.length === 4 && parts[3] === "draw-respond") {
+      const body = await readBody(req);
+      const color = ["white", "black"].find((candidate) => room.players[candidate] === body.token);
+
+      if (!color) {
+        json(res, 403, { error: "Нет прав ответить на ничью" });
+        return;
+      }
+
+      if (!room.drawOffer || room.drawOffer.from === color) {
+        json(res, 409, { error: "Нет предложения ничьей" });
+        return;
+      }
+
+      if (body.accept) {
+        room.game = {
+          ...room.game,
+          status: "finished",
+          winner: null,
+          drawAccepted: true,
+          message: "Ничья по соглашению",
+        };
+      }
+
+      room.drawOffer = null;
       touch(room);
       json(res, 200, { room: publicRoom(room) });
       return;

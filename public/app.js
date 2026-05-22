@@ -10,10 +10,20 @@ const lobbyActions = document.querySelector("#lobbyActions");
 const gameActions = document.querySelector("#gameActions");
 const createRoomButton = document.querySelector("#createRoomButton");
 const leaveRoomButton = document.querySelector("#leaveRoomButton");
+const drawButton = document.querySelector("#drawButton");
 const joinForm = document.querySelector("#joinForm");
+const nameInput = document.querySelector("#nameInput");
 const roomInput = document.querySelector("#roomInput");
 const copyLinkButton = document.querySelector("#copyLinkButton");
+const scoreCard = document.querySelector("#scoreCard");
+const whiteNameEl = document.querySelector("#whiteName");
+const blackNameEl = document.querySelector("#blackName");
+const scoreTextEl = document.querySelector("#scoreText");
 const toastEl = document.querySelector("#toast");
+const modalBackdrop = document.querySelector("#modalBackdrop");
+const modalTitle = document.querySelector("#modalTitle");
+const modalText = document.querySelector("#modalText");
+const modalActions = document.querySelector("#modalActions");
 
 const files = ["a", "b", "c", "d", "e", "f", "g", "h"];
 let room = null;
@@ -24,6 +34,8 @@ let legalMoves = [];
 let pollTimer = null;
 let toastTimer = null;
 let showForcedCaptures = false;
+let activeModalKey = null;
+const dismissedModalKeys = new Set();
 
 function storageKey(code) {
   return `russian-checkers:${code}`;
@@ -51,6 +63,23 @@ function colorName(color) {
   if (color === "white") return "белые";
   if (color === "black") return "черные";
   return "наблюдатель";
+}
+
+function displayPlayerName(color) {
+  return room?.playerNames?.[color] || (color === "white" ? "Белые" : "Черные");
+}
+
+function getPlayerName() {
+  const name = nameInput.value.trim().replace(/\s+/g, " ").slice(0, 24);
+  if (!name) {
+    showToast("Введите имя.");
+    statusText.textContent = "Введите имя, чтобы создать комнату или войти.";
+    nameInput.focus();
+    return null;
+  }
+  nameInput.value = name;
+  localStorage.setItem("russian-checkers:name", name);
+  return name;
 }
 
 function pointKey(point) {
@@ -118,6 +147,32 @@ function showToast(message) {
   toastTimer = setTimeout(() => {
     toastEl.hidden = true;
   }, 2600);
+}
+
+function closeModal(dismissCurrent = false) {
+  if (dismissCurrent && activeModalKey) dismissedModalKeys.add(activeModalKey);
+  modalBackdrop.hidden = true;
+  modalActions.innerHTML = "";
+}
+
+function showModal(key, title, text, actions) {
+  if (dismissedModalKeys.has(key)) return;
+  if (activeModalKey === key && !modalBackdrop.hidden) return;
+  activeModalKey = key;
+  modalTitle.textContent = title;
+  modalText.textContent = text;
+  modalActions.innerHTML = "";
+
+  for (const action of actions) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = action.label;
+    if (action.className) button.className = action.className;
+    button.addEventListener("click", action.onClick);
+    modalActions.append(button);
+  }
+
+  modalBackdrop.hidden = false;
 }
 
 function resetSelection() {
@@ -215,18 +270,26 @@ function renderStatus() {
     gameActions.hidden = true;
     playerStrip.hidden = true;
     roomCard.hidden = true;
+    scoreCard.hidden = true;
+    closeModal();
     return;
   }
 
   lobbyActions.hidden = true;
   gameActions.hidden = false;
   playerStrip.hidden = false;
-  leaveRoomButton.textContent = isRoomReady() && player.color !== "spectator" ? "Сдаться" : "Выйти";
+  leaveRoomButton.textContent =
+    isRoomReady() && player.color !== "spectator" && room.game.status === "playing" ? "Сдаться" : "Выйти";
+  drawButton.hidden = !(isRoomReady() && player.color !== "spectator" && room.game.status === "playing");
   roomCard.hidden = false;
+  scoreCard.hidden = false;
   roomCodeEl.textContent = room.code;
   playerColorEl.textContent = colorName(player.color);
   playerCountEl.textContent = `${Number(room.players.white) + Number(room.players.black)}/2`;
   turnText.textContent = room.game.turn === "white" ? "белые" : "черные";
+  whiteNameEl.textContent = displayPlayerName("white");
+  blackNameEl.textContent = displayPlayerName("black");
+  scoreTextEl.textContent = `${room.score?.white ?? 0}/${room.score?.black ?? 0}`;
 
   if (room.game.status === "finished") {
     statusText.textContent = room.game.message;
@@ -240,6 +303,7 @@ function renderStatus() {
     statusText.textContent = "Ждем ход соперника.";
   }
 
+  maybeShowRoomModal();
 }
 
 function render() {
@@ -266,7 +330,13 @@ async function api(path, options = {}) {
 }
 
 async function createRoom() {
-  const payload = await api("/api/rooms", { method: "POST", body: "{}" });
+  const name = getPlayerName();
+  if (!name) return;
+
+  const payload = await api("/api/rooms", {
+    method: "POST",
+    body: JSON.stringify({ name }),
+  });
   room = payload.room;
   player = payload.player;
   saveSession(room.code);
@@ -280,9 +350,13 @@ async function joinRoom(code) {
   const normalized = code.trim().toUpperCase();
   if (!normalized) return;
   const saved = loadSession(normalized);
+  if (saved?.name && !nameInput.value.trim()) nameInput.value = saved.name;
+  const name = saved?.token && !nameInput.value.trim() ? saved.name : getPlayerName();
+  if (!name) return;
+
   const payload = await api(`/api/rooms/${normalized}/join`, {
     method: "POST",
-    body: JSON.stringify({ token: saved?.token || null }),
+    body: JSON.stringify({ token: saved?.token || null, name }),
   });
   room = payload.room;
   player = payload.player;
@@ -291,6 +365,28 @@ async function joinRoom(code) {
   resetSelection();
   render();
   startPolling();
+}
+
+async function offerDraw() {
+  if (!room || !player.token) return;
+  const payload = await api(`/api/rooms/${room.code}/draw-offer`, {
+    method: "POST",
+    body: JSON.stringify({ token: player.token }),
+  });
+  room = payload.room;
+  showToast("Предложение ничьей отправлено.");
+  render();
+}
+
+async function respondDraw(accept) {
+  if (!room || !player.token) return;
+  const payload = await api(`/api/rooms/${room.code}/draw-respond`, {
+    method: "POST",
+    body: JSON.stringify({ token: player.token, accept }),
+  });
+  room = payload.room;
+  closeModal();
+  render();
 }
 
 async function submitMove(move) {
@@ -327,6 +423,49 @@ async function leaveRoom() {
   history.replaceState(null, "", "/");
   roomInput.value = "";
   render();
+}
+
+function maybeShowRoomModal() {
+  if (!room || player.color === "spectator") return;
+
+  if (room.drawOffer && room.drawOffer.from !== player.color && room.game.status === "playing") {
+    showModal(
+      `draw:${room.code}:${room.drawOffer.from}:${room.version}`,
+      "Предложение ничьей",
+      `${room.drawOffer.name} предлагает закончить партию ничьей.`,
+      [
+        {
+          label: "Согласиться",
+          className: "primary",
+          onClick: () => respondDraw(true).catch(showError),
+        },
+        {
+          label: "Отказаться",
+          onClick: () => respondDraw(false).catch(showError),
+        },
+      ],
+    );
+    return;
+  }
+
+  if (
+    room.game.status === "finished" &&
+    room.game.resignedBy &&
+    room.game.resignedBy !== player.color
+  ) {
+    showModal(
+      `resign:${room.code}:${room.game.resignedBy}:${room.version}`,
+      "Ваш соперник сдался",
+      "Партия завершена, очко записано в ваш счёт.",
+      [
+        {
+          label: "Понятно",
+          className: "primary",
+          onClick: () => closeModal(true),
+        },
+      ],
+    );
+  }
 }
 
 function handleCellClick(point) {
@@ -427,6 +566,10 @@ leaveRoomButton.addEventListener("click", () => {
   leaveRoom().catch(showError);
 });
 
+drawButton.addEventListener("click", () => {
+  offerDraw().catch(showError);
+});
+
 joinForm.addEventListener("submit", (event) => {
   event.preventDefault();
   joinRoom(roomInput.value).catch(showError);
@@ -443,10 +586,19 @@ copyLinkButton.addEventListener("click", async () => {
   }
 });
 
+nameInput.value = localStorage.getItem("russian-checkers:name") || "";
 const initialRoom = new URLSearchParams(location.search).get("room");
 if (initialRoom) {
-  roomInput.value = initialRoom.toUpperCase();
-  joinRoom(initialRoom).catch(showError);
+  const normalized = initialRoom.toUpperCase();
+  const saved = loadSession(normalized);
+  roomInput.value = normalized;
+  if (saved?.name && !nameInput.value.trim()) nameInput.value = saved.name;
+  if (saved?.token || nameInput.value.trim()) {
+    joinRoom(normalized).catch(showError);
+  } else {
+    render();
+    statusText.textContent = "Введите имя, чтобы войти в комнату.";
+  }
 } else {
   render();
 }

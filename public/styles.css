@@ -91,6 +91,9 @@ input {
   padding: 0 12px;
   color: var(--ink);
   background: #ffffff;
+}
+
+#roomInput {
   text-transform: uppercase;
 }
 
@@ -150,9 +153,9 @@ h1 {
 }
 
 .room-card,
-.player-strip {
+.player-strip,
+.score-card {
   display: grid;
-  grid-template-columns: 1fr auto;
   gap: 12px;
   align-items: center;
   border: 1px solid var(--line);
@@ -161,12 +164,25 @@ h1 {
   background: rgba(255, 255, 255, 0.76);
 }
 
+.room-card {
+  grid-template-columns: 1fr auto;
+}
+
 .player-strip {
   grid-template-columns: repeat(3, 1fr);
 }
 
+.score-card {
+  grid-template-columns: 1fr auto 1fr;
+}
+
+.score-card > div:last-child {
+  text-align: right;
+}
+
 .room-card span,
-.player-strip span {
+.player-strip span,
+.score-card span {
   display: block;
   margin-bottom: 4px;
   color: var(--muted);
@@ -176,8 +192,15 @@ h1 {
 }
 
 .room-card strong,
-.player-strip strong {
+.player-strip strong,
+.score-card strong {
   font-size: 20px;
+}
+
+.score-text {
+  align-self: center;
+  justify-self: center;
+  font-size: 28px !important;
 }
 
 .board-shell {
@@ -290,6 +313,50 @@ h1 {
   transform: translateX(-50%);
 }
 
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(37, 75, 92, 0.18);
+}
+
+.modal {
+  width: min(420px, 100%);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 24px;
+  color: var(--ink);
+  background: #ffffff;
+  box-shadow: 0 24px 70px rgba(37, 75, 92, 0.22);
+}
+
+.modal h2 {
+  margin: 0;
+  font-size: 28px;
+  line-height: 1.1;
+}
+
+.modal p {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1.4;
+}
+
+.modal-actions {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.modal-actions button:only-child {
+  grid-column: 1 / -1;
+}
+
 @media (max-width: 820px) {
   .app {
     grid-template-columns: 1fr;
@@ -319,7 +386,13 @@ h1 {
 @media (max-width: 460px) {
   .join-form,
   .player-strip,
-  .room-card {
+  .room-card,
+  .score-card,
+  .modal-actions {
     grid-template-columns: 1fr;
+  }
+
+  .score-card > div:last-child {
+    text-align: left;
   }
 }

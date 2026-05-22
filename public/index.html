@@ -16,6 +16,7 @@
         </div>
 
         <div class="room-actions" id="lobbyActions">
+          <input id="nameInput" autocomplete="name" maxlength="24" placeholder="Ваше имя" required />
           <button class="primary" id="createRoomButton" type="button">Создать комнату</button>
           <form id="joinForm" class="join-form">
             <input id="roomInput" autocomplete="off" maxlength="6" placeholder="Код комнаты" />
@@ -24,6 +25,7 @@
         </div>
 
         <div class="room-actions" id="gameActions" hidden>
+          <button id="drawButton" type="button">Ничья</button>
           <button class="danger" id="leaveRoomButton" type="button">Выйти</button>
         </div>
 
@@ -49,6 +51,18 @@
             <strong id="turnText">-</strong>
           </div>
         </div>
+
+        <div class="score-card" id="scoreCard" hidden>
+          <div>
+            <span>Белые</span>
+            <strong id="whiteName">-</strong>
+          </div>
+          <strong class="score-text" id="scoreText">0/0</strong>
+          <div>
+            <span>Черные</span>
+            <strong id="blackName">-</strong>
+          </div>
+        </div>
       </section>
 
       <section class="board-shell" aria-label="Игровая доска">
@@ -57,6 +71,14 @@
     </main>
 
     <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+    <div class="modal-backdrop" id="modalBackdrop" hidden>
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <h2 id="modalTitle"></h2>
+        <p id="modalText"></p>
+        <div class="modal-actions" id="modalActions"></div>
+      </div>
+    </div>
 
     <script src="/rules.js"></script>
     <script src="/app.js"></script>
