@@ -476,6 +476,34 @@ body[data-screen="game"] .player-strip span {
   text-transform: none;
 }
 
+.animated-dots::after {
+  display: inline-block;
+  width: 1.2em;
+  overflow: hidden;
+  vertical-align: bottom;
+  content: "";
+  animation: thinking-dots 1.2s steps(4, end) infinite;
+}
+
+@keyframes thinking-dots {
+  0% {
+    content: "";
+  }
+
+  25% {
+    content: ".";
+  }
+
+  50% {
+    content: "..";
+  }
+
+  75%,
+  100% {
+    content: "...";
+  }
+}
+
 .opponent-card {
   position: absolute;
   top: 50%;

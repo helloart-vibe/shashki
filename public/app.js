@@ -413,7 +413,7 @@ function renderStatus() {
     setRoomStatus();
     thinkingText.hidden = true;
     opponentThinkingText.hidden = false;
-    opponentThinkingText.textContent = "думает, как сходить...";
+    opponentThinkingText.textContent = "думает, как сходить";
   }
 
   maybeShowRoomModal();
