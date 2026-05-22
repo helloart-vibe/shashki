@@ -2,6 +2,7 @@ const boardEl = document.querySelector("#board");
 const statusText = document.querySelector("#statusText");
 const roomCard = document.querySelector("#roomCard");
 const roomCodeEl = document.querySelector("#roomCode");
+const playerStrip = document.querySelector("#playerStrip");
 const playerColorEl = document.querySelector("#playerColor");
 const playerCountEl = document.querySelector("#playerCount");
 const turnText = document.querySelector("#turnText");
@@ -13,7 +14,6 @@ const joinForm = document.querySelector("#joinForm");
 const roomInput = document.querySelector("#roomInput");
 const copyLinkButton = document.querySelector("#copyLinkButton");
 const toastEl = document.querySelector("#toast");
-const debugLine = document.querySelector("#debugLine");
 
 const files = ["a", "b", "c", "d", "e", "f", "g", "h"];
 let room = null;
@@ -210,12 +210,14 @@ function renderStatus() {
     turnText.textContent = "-";
     lobbyActions.hidden = false;
     gameActions.hidden = true;
+    playerStrip.hidden = true;
     roomCard.hidden = true;
     return;
   }
 
   lobbyActions.hidden = true;
   gameActions.hidden = false;
+  playerStrip.hidden = false;
   leaveRoomButton.textContent = isRoomReady() && player.color !== "spectator" ? "Сдаться" : "Выйти";
   roomCard.hidden = false;
   roomCodeEl.textContent = room.code;
@@ -235,9 +237,6 @@ function renderStatus() {
     statusText.textContent = "Ждем ход соперника.";
   }
 
-  if (room.server) {
-    debugLine.textContent = `sync: ${room.server.version} / ${room.server.instanceId} / rooms ${room.server.roomCount}`;
-  }
 }
 
 function render() {

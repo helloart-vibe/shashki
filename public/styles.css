@@ -180,13 +180,6 @@ h1 {
   font-size: 20px;
 }
 
-.debug-line {
-  color: #91a8b2;
-  font-size: 12px;
-  line-height: 1.4;
-  word-break: break-word;
-}
-
 .board-shell {
   display: grid;
   place-items: center;
