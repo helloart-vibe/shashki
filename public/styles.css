@@ -252,8 +252,19 @@ body[data-screen="game"] .status {
 }
 
 .room-code-inline {
-  color: #858585;
+  min-height: 0;
+  border: 0;
   border-bottom: 1px dotted currentColor;
+  border-radius: 0;
+  padding: 0;
+  color: #858585;
+  background: transparent;
+  cursor: pointer;
+}
+
+.room-code-inline:hover {
+  color: #000000;
+  background: transparent;
 }
 
 .room-actions,

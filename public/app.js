@@ -120,7 +120,18 @@ function getPlayerName() {
 }
 
 function setRoomStatus() {
-  statusText.innerHTML = `комната <span class="room-code-inline">${room.code}</span>`;
+  statusText.innerHTML = `комната <button class="room-code-inline" type="button">${room.code}</button>`;
+}
+
+async function copyRoomLink() {
+  if (!room) return;
+  const url = `${location.origin}/?room=${room.code}`;
+  try {
+    await navigator.clipboard.writeText(url);
+    showToast("Ссылка на комнату скопирована.");
+  } catch {
+    statusText.textContent = url;
+  }
 }
 
 function pointKey(point) {
@@ -659,15 +670,12 @@ joinForm.addEventListener("submit", (event) => {
   joinRoom(roomInput.value).catch(showError);
 });
 
-copyLinkButton.addEventListener("click", async () => {
-  if (!room) return;
-  const url = `${location.origin}/?room=${room.code}`;
-  try {
-    await navigator.clipboard.writeText(url);
-    statusText.textContent = "Ссылка скопирована.";
-  } catch {
-    statusText.textContent = url;
-  }
+copyLinkButton.addEventListener("click", () => {
+  copyRoomLink();
+});
+
+statusText.addEventListener("click", (event) => {
+  if (event.target.classList.contains("room-code-inline")) copyRoomLink();
 });
 
 nameInput.value = localStorage.getItem("russian-checkers:name") || "";
