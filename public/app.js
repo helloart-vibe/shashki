@@ -368,7 +368,7 @@ function renderStatus() {
   leaveRoomButton.textContent =
     isRoomReady() && player.color !== "spectator" && room.game.status === "playing" ? "Сдаться" : "Выйти";
   drawButton.hidden = !(isRoomReady() && player.color !== "spectator" && room.game.status === "playing");
-  rematchButton.hidden = false;
+  rematchButton.hidden = !(room.game.status === "finished" && room.game.winner);
   roomCard.hidden = false;
   scoreCard.hidden = true;
   selfCard.hidden = player.color === "spectator";
