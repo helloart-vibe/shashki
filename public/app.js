@@ -50,11 +50,13 @@ const themes = new Set(["midnight", "sand", "sky", "lime", "walnut"]);
 const uiThemes = new Set(["light", "dark"]);
 const soundStates = new Set(["on", "off"]);
 const moveSound = new Audio("/move.mp3");
+const captureSound = new Audio("/capture.mp3");
 const promotionSound = new Audio("/promotion.mp3");
 const soundToggleEffect = new Audio("/sound-toggle.mp3");
 const themeToggleEffect = new Audio("/theme-toggle.mp3");
 const roomEnterSound = new Audio("/room-enter.mp3");
 moveSound.preload = "auto";
+captureSound.preload = "auto";
 promotionSound.preload = "auto";
 soundToggleEffect.preload = "auto";
 themeToggleEffect.preload = "auto";
@@ -124,6 +126,7 @@ function applySoundState(value) {
   document.body.dataset.sound = nextState;
   soundToggle.setAttribute("aria-label", nextState === "on" ? "Выключить звук" : "Включить звук");
   moveSound.muted = nextState === "off";
+  captureSound.muted = nextState === "off";
   promotionSound.muted = nextState === "off";
 }
 
@@ -178,6 +181,10 @@ function didMovePromote(previousRoom, nextRoom) {
   return Boolean(fromPiece && !fromPiece.king && toPiece?.king);
 }
 
+function didMoveCapture(nextRoom) {
+  return Boolean(nextRoom?.game?.lastMove?.steps?.some((step) => step.capture));
+}
+
 function playGameSound(previousRoom, nextRoom = room) {
   if (document.body.dataset.sound === "off") return;
   const nextKey = moveSoundKey(nextRoom);
@@ -189,7 +196,11 @@ function playGameSound(previousRoom, nextRoom = room) {
   if (now - lastMoveSoundAt < 180) return;
 
   lastMoveSoundAt = now;
-  const sound = didMovePromote(previousRoom, nextRoom) ? promotionSound : moveSound;
+  const sound = didMovePromote(previousRoom, nextRoom)
+    ? promotionSound
+    : didMoveCapture(nextRoom)
+      ? captureSound
+      : moveSound;
   sound.currentTime = 0;
   sound.play().catch(() => {});
 }
