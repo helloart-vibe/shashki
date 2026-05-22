@@ -148,6 +148,15 @@ function shakeBoard() {
   boardEl.addEventListener("animationend", () => boardEl.classList.remove("is-shaking"), { once: true });
 }
 
+function startBoardShake() {
+  boardEl.classList.remove("is-shaking");
+  boardEl.classList.add("is-shaking-loop");
+}
+
+function stopBoardShake() {
+  boardEl.classList.remove("is-shaking-loop");
+}
+
 function moveSoundKey(nextRoom = room) {
   if (!nextRoom?.game?.lastMove) return "";
   return `${nextRoom.code}:${nextRoom.version}:${JSON.stringify(nextRoom.game.lastMove)}`;
@@ -999,7 +1008,8 @@ drawButton.addEventListener("click", () => {
   offerDraw().catch(showError);
 });
 
-shakeButton.addEventListener("mouseenter", shakeBoard);
+shakeButton.addEventListener("mouseenter", startBoardShake);
+shakeButton.addEventListener("mouseleave", stopBoardShake);
 shakeButton.addEventListener("focus", shakeBoard);
 shakeButton.addEventListener("click", shakeBoard);
 
