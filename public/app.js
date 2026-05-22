@@ -59,6 +59,9 @@ let toastTimer = null;
 let showForcedCaptures = false;
 let activeModalKey = null;
 let lastMoveSoundKey = "";
+let lastMoveSoundAt = 0;
+let moveRequestPending = false;
+let playedMoveSoundKeys = new Set();
 const dismissedModalKeys = new Set();
 
 function normalizeTheme(theme) {
@@ -116,19 +119,26 @@ function toggleSound() {
 
 function moveSoundKey(nextRoom = room) {
   if (!nextRoom?.game?.lastMove) return "";
-  return `${nextRoom.code}:${JSON.stringify(nextRoom.game.lastMove)}`;
+  return `${nextRoom.code}:${nextRoom.version}:${JSON.stringify(nextRoom.game.lastMove)}`;
 }
 
 function rememberMoveSound(nextRoom = room) {
-  lastMoveSoundKey = moveSoundKey(nextRoom);
+  const nextKey = moveSoundKey(nextRoom);
+  lastMoveSoundKey = nextKey;
+  playedMoveSoundKeys = nextKey ? new Set([nextKey]) : new Set();
 }
 
 function playMoveSound(nextRoom = room) {
   if (document.body.dataset.sound === "off") return;
   const nextKey = moveSoundKey(nextRoom);
-  if (!nextKey || nextKey === lastMoveSoundKey) return;
+  if (!nextKey || nextKey === lastMoveSoundKey || playedMoveSoundKeys.has(nextKey)) return;
 
   lastMoveSoundKey = nextKey;
+  playedMoveSoundKeys.add(nextKey);
+  const now = Date.now();
+  if (now - lastMoveSoundAt < 180) return;
+
+  lastMoveSoundAt = now;
   moveSound.currentTime = 0;
   moveSound.play().catch(() => {});
 }
@@ -621,15 +631,21 @@ async function respondRematch(accept) {
 }
 
 async function submitMove(move) {
-  if (!room || !isMyTurn()) return;
-  const payload = await api(`/api/rooms/${room.code}/move`, {
-    method: "POST",
-    body: JSON.stringify({ token: player.token, color: player.color, move }),
-  });
-  room = payload.room;
-  playMoveSound(room);
-  resetSelection();
-  render();
+  if (!room || !isMyTurn() || moveRequestPending) return;
+  moveRequestPending = true;
+
+  try {
+    const payload = await api(`/api/rooms/${room.code}/move`, {
+      method: "POST",
+      body: JSON.stringify({ token: player.token, color: player.color, move }),
+    });
+    room = payload.room;
+    playMoveSound(room);
+    resetSelection();
+    render();
+  } finally {
+    moveRequestPending = false;
+  }
 }
 
 async function leaveRoom() {
