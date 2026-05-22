@@ -34,7 +34,7 @@ function cleanName(name) {
 }
 
 function cleanTheme(theme) {
-  return THEMES.has(theme) ? theme : "sky";
+  return THEMES.has(theme) ? theme : "midnight";
 }
 
 function isRoomReady(room) {

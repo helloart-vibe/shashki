@@ -7,19 +7,20 @@
     <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
+    <header class="site-header">GOSHASHKI</header>
+
     <main class="app">
       <section class="side-panel">
         <div>
-          <p class="eyebrow">онлайн-партия</p>
-          <h1>Русские шашки</h1>
-          <p class="status" id="statusText">Создайте комнату или подключитесь по коду.</p>
+          <h1>Создайте комнату</h1>
+          <p class="status" id="statusText">или подключитесь по коду.</p>
         </div>
 
         <div class="room-actions" id="lobbyActions">
-          <input id="nameInput" autocomplete="name" maxlength="24" placeholder="Ваше имя" required />
+          <input id="nameInput" autocomplete="name" maxlength="24" placeholder="ИМЯ" required />
           <button class="primary" id="createRoomButton" type="button">Создать комнату</button>
           <form id="joinForm" class="join-form">
-            <input id="roomInput" autocomplete="off" maxlength="6" placeholder="Код комнаты" />
+            <input id="roomInput" autocomplete="off" maxlength="6" placeholder="КОД КОМНАТЫ" />
             <button type="submit">Войти</button>
           </form>
           <div class="style-picker" id="stylePicker" aria-label="Стиль шашек">
@@ -83,6 +84,11 @@
         <div class="board" id="board"></div>
       </section>
     </main>
+
+    <footer class="site-footer">
+      <span>telegram</span>
+      <span>hello@goshashki.com</span>
+    </footer>
 
     <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 

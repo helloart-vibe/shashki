@@ -41,7 +41,7 @@ let activeModalKey = null;
 const dismissedModalKeys = new Set();
 
 function normalizeTheme(theme) {
-  return themes.has(theme) ? theme : "sky";
+  return themes.has(theme) ? theme : "midnight";
 }
 
 function applyTheme(theme) {
@@ -283,7 +283,7 @@ function renderBoard() {
 function renderStatus() {
   if (!room) {
     applyTheme(localStorage.getItem(themeKey));
-    statusText.textContent = "Создайте комнату или подключитесь по коду.";
+    statusText.textContent = "или подключитесь по коду.";
     playerColorEl.textContent = "не подключены";
     playerCountEl.textContent = "0/2";
     turnText.textContent = "-";
