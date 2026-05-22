@@ -117,8 +117,14 @@
       </div>
 
       <div class="room-actions game-actions" id="gameActions" hidden>
-        <button class="danger" id="leaveRoomButton" type="button">Сдаться</button>
-        <button id="drawButton" type="button">Ничья</button>
+        <button class="danger icon-action surrender-action" id="leaveRoomButton" type="button">
+          <span class="action-icon"></span>
+          <span id="leaveRoomText">Сдаться</span>
+        </button>
+        <button class="icon-action draw-action" id="drawButton" type="button">
+          <span class="action-icon"></span>
+          <span>Ничья</span>
+        </button>
         <button class="shake-button" id="shakeButton" type="button" aria-label="Потрясти доску"></button>
         <button id="rematchButton" type="button">Реванш</button>
       </div>

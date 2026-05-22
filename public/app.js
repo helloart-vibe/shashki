@@ -11,6 +11,7 @@ const lobbyActions = document.querySelector("#lobbyActions");
 const gameActions = document.querySelector("#gameActions");
 const createRoomButton = document.querySelector("#createRoomButton");
 const leaveRoomButton = document.querySelector("#leaveRoomButton");
+const leaveRoomText = document.querySelector("#leaveRoomText");
 const drawButton = document.querySelector("#drawButton");
 const shakeButton = document.querySelector("#shakeButton");
 const rematchButton = document.querySelector("#rematchButton");
@@ -666,7 +667,7 @@ function renderStatus() {
   lobbyActions.hidden = true;
   gameActions.hidden = false;
   playerStrip.hidden = false;
-  leaveRoomButton.textContent =
+  leaveRoomText.textContent =
     isRoomReady() && player.color !== "spectator" && room.game.status === "playing" ? "Сдаться" : "Выйти";
   drawButton.hidden = !(isRoomReady() && player.color !== "spectator" && room.game.status === "playing");
   rematchButton.hidden = !(

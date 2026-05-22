@@ -428,15 +428,40 @@ body[data-screen="game"] .status {
   width: 220px;
 }
 
+.game-actions .icon-action {
+  display: inline-flex;
+  gap: 22px;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+
+.action-icon {
+  width: 34px;
+  aspect-ratio: 1;
+  background: currentColor;
+  content: "";
+}
+
+.surrender-action .action-icon {
+  -webkit-mask: url("/flag-banner-light.svg") center / contain no-repeat;
+  mask: url("/flag-banner-light.svg") center / contain no-repeat;
+}
+
+.draw-action .action-icon {
+  -webkit-mask: url("/handshake-light.svg") center / contain no-repeat;
+  mask: url("/handshake-light.svg") center / contain no-repeat;
+}
+
 .game-actions .shake-button {
-  width: 52px;
-  min-width: 52px;
+  width: 70px;
+  min-width: 70px;
   min-height: 52px;
   padding: 0;
   border-color: var(--button-secondary-border);
-  border-radius: 50%;
+  border-radius: 8px;
   background:
-    url("/hand-fist-light.svg") center / 27px 27px no-repeat,
+    url("/hand-fist-light.svg") center / 31px 31px no-repeat,
     var(--button-secondary-bg);
 }
 
@@ -1235,12 +1260,12 @@ body[data-screen="game"] .board {
   }
 
   body[data-screen="game"] .game-actions button:not(.shake-button) {
-    width: 100%;
+    width: min(220px, 100%);
   }
 
   body[data-screen="game"] .game-actions .shake-button {
-    width: 52px;
-    min-width: 52px;
+    width: 70px;
+    min-width: 70px;
   }
 
   body[data-screen="game"] .match-card {
