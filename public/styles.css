@@ -22,50 +22,50 @@
 
 body[data-theme="midnight"] {
   --dark-cell: #000000;
-  --light-cell: #606060;
-  --white-piece: #a6ff00;
-  --black-piece: #18b9e8;
+  --light-cell: #5f5f5d;
+  --white-piece: #ffffff;
+  --black-piece: #3fb7d6;
   --king-on-white: #000000;
   --king-on-black: #000000;
-  --capture-dot: #777777;
-  --selected-ring: rgba(24, 185, 232, 0.82);
+  --capture-dot: #7e7e7d;
+  --selected-ring: rgba(63, 183, 214, 0.84);
   --board-shadow: 0 26px 70px rgba(0, 0, 0, 0.18);
 }
 
 body[data-theme="sand"] {
-  --dark-cell: #c9af97;
-  --light-cell: #efe8df;
+  --dark-cell: #c8bbad;
+  --light-cell: #f1f1f1;
   --white-piece: #ffffff;
-  --black-piece: #654b3b;
-  --king-on-white: #c9af97;
-  --king-on-black: #d6c1ad;
-  --capture-dot: #c9af97;
-  --selected-ring: rgba(101, 75, 59, 0.8);
-  --board-shadow: 0 26px 70px rgba(101, 75, 59, 0.16);
+  --black-piece: #927d66;
+  --king-on-white: #c8bbad;
+  --king-on-black: #d3c6b8;
+  --capture-dot: #ffffff;
+  --selected-ring: rgba(146, 125, 102, 0.82);
+  --board-shadow: 0 26px 70px rgba(146, 125, 102, 0.16);
 }
 
 body[data-theme="sky"] {
-  --dark-cell: #93c5d8;
+  --dark-cell: #94c5d8;
   --light-cell: #f2eee8;
   --white-piece: #ffffff;
-  --black-piece: #3f86a4;
-  --king-on-white: #93c5d8;
+  --black-piece: #3d85a3;
+  --king-on-white: #94c5d8;
   --king-on-black: #9fcfe0;
-  --capture-dot: #5ca5c0;
+  --capture-dot: #3d85a3;
   --selected-ring: rgba(62, 131, 159, 0.75);
   --board-shadow: 0 26px 70px rgba(147, 197, 216, 0.28);
 }
 
 body[data-theme="lime"] {
-  --dark-cell: #000000;
-  --light-cell: #606060;
-  --white-piece: #a6ff00;
-  --black-piece: #18b9e8;
-  --king-on-white: #000000;
-  --king-on-black: #000000;
-  --capture-dot: #777777;
-  --selected-ring: rgba(166, 255, 0, 0.86);
-  --board-shadow: 0 26px 70px rgba(166, 255, 0, 0.14);
+  --dark-cell: #0f4d3b;
+  --light-cell: #e7c49d;
+  --white-piece: #ffffff;
+  --black-piece: #1fa57d;
+  --king-on-white: #0f4d3b;
+  --king-on-black: #0f4d3b;
+  --capture-dot: #1fa57d;
+  --selected-ring: rgba(31, 165, 125, 0.82);
+  --board-shadow: 0 26px 70px rgba(15, 77, 59, 0.18);
 }
 
 * {
@@ -274,15 +274,15 @@ h1 {
 }
 
 .style-swatch[data-theme="sand"] {
-  color: #c9af97;
+  color: #c8bbad;
 }
 
 .style-swatch[data-theme="sky"] {
-  color: #93c5d8;
+  color: #94c5d8;
 }
 
 .style-swatch[data-theme="lime"] {
-  color: #86d000;
+  color: #0f4d3b;
 }
 
 .room-card,
