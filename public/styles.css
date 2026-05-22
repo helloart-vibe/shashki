@@ -4,7 +4,7 @@
   --muted: #858585;
   --panel: #ffffff;
   --line: #eeeeee;
-  --field: #eeeeee;
+  --field: #f4f4f4;
   --dark-cell: #000000;
   --light-cell: #606060;
   --white-piece: #a6ff00;
@@ -124,18 +124,19 @@ input {
 
 button {
   min-height: 52px;
-  border: 0;
+  border: 1px solid #c8c8c8;
   border-radius: 8px;
-  color: #ffffff;
-  background: #000000;
+  color: #000000;
+  background: #f7f7f7;
   cursor: pointer;
   transition:
+    opacity 140ms ease,
     transform 140ms ease,
     background 140ms ease;
 }
 
 button:hover {
-  background: #151515;
+  opacity: 0.82;
 }
 
 button:active {
@@ -143,21 +144,25 @@ button:active {
 }
 
 button.primary {
+  border-color: #000000;
   color: #ffffff;
   background: #000000;
 }
 
 button.primary:hover {
-  background: #151515;
+  background: #000000;
+  opacity: 0.9;
 }
 
 button.danger {
+  border-color: #000000;
   color: #ffffff;
   background: #000000;
 }
 
 button.danger:hover {
-  background: #151515;
+  background: #000000;
+  opacity: 0.9;
 }
 
 button:disabled {
@@ -265,6 +270,7 @@ body[data-screen="game"] .status {
 .room-code-inline:hover {
   color: #000000;
   background: transparent;
+  opacity: 1;
 }
 
 .room-actions,
@@ -315,6 +321,7 @@ body[data-screen="game"] .status {
 
 .style-swatch:hover {
   background: transparent;
+  opacity: 0.78;
 }
 
 .style-swatch::before {
@@ -755,6 +762,7 @@ body[data-screen="game"] .board {
 
 .result-backdrop .modal-actions button.secondary:hover {
   background: #e2e2e2;
+  opacity: 0.82;
 }
 
 .modal-actions button:only-child {
