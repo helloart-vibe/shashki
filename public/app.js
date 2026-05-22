@@ -71,6 +71,7 @@ let lastMoveSoundKey = "";
 let lastMoveSoundAt = 0;
 let moveRequestPending = false;
 let playedMoveSoundKeys = new Set();
+let boardMoveAnimation = null;
 const dismissedModalKeys = new Set();
 
 function normalizeTheme(theme) {
@@ -174,6 +175,37 @@ function playGameSound(previousRoom, nextRoom = room) {
   const sound = didMovePromote(previousRoom, nextRoom) ? promotionSound : moveSound;
   sound.currentTime = 0;
   sound.play().catch(() => {});
+}
+
+function displayPoint(point) {
+  if (player.color === "black") return { r: 7 - point.r, c: 7 - point.c };
+  return point;
+}
+
+function queueMoveAnimation(previousRoom, nextRoom = room) {
+  const move = nextRoom?.game?.lastMove;
+  const nextKey = moveSoundKey(nextRoom);
+  if (!previousRoom?.game?.board || !nextRoom?.game?.board || !move?.steps?.length || !nextKey) {
+    boardMoveAnimation = null;
+    return;
+  }
+
+  const finalStep = move.steps[move.steps.length - 1];
+  const fromPiece = previousRoom.game.board[move.from.r]?.[move.from.c];
+  const toPiece = nextRoom.game.board[finalStep.to.r]?.[finalStep.to.c];
+  if (!fromPiece || !toPiece) {
+    boardMoveAnimation = null;
+    return;
+  }
+
+  const from = displayPoint(move.from);
+  const to = displayPoint(finalStep.to);
+  boardMoveAnimation = {
+    key: nextKey,
+    to: pointKey(finalStep.to),
+    dx: from.c - to.c,
+    dy: from.r - to.r,
+  };
 }
 
 function storageKey(code) {
@@ -462,6 +494,11 @@ function renderBoard() {
       if (piece) {
         const pieceEl = document.createElement("div");
         pieceEl.className = `piece ${piece.color}${piece.king ? " king" : ""}`;
+        if (boardMoveAnimation?.to === key) {
+          pieceEl.classList.add("is-arriving");
+          pieceEl.style.setProperty("--move-dx", String(boardMoveAnimation.dx));
+          pieceEl.style.setProperty("--move-dy", String(boardMoveAnimation.dy));
+        }
         cell.append(pieceEl);
       }
 
@@ -481,6 +518,8 @@ function renderBoard() {
       boardEl.append(cell);
     }
   }
+
+  boardMoveAnimation = null;
 }
 
 function renderStatus() {
@@ -712,6 +751,7 @@ async function submitMove(move) {
       body: JSON.stringify({ token: player.token, color: player.color, move }),
     });
     room = payload.room;
+    queueMoveAnimation(previousRoom, room);
     playGameSound(previousRoom, room);
     resetSelection();
     render();
@@ -914,6 +954,7 @@ function startPolling() {
         const previousRoom = room;
         const nextRoom = payload.room;
         room = payload.room;
+        queueMoveAnimation(previousRoom, nextRoom);
         playGameSound(previousRoom, nextRoom);
         render();
       }

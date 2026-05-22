@@ -767,6 +767,29 @@ body[data-screen="game"] .board {
   border-radius: 50%;
   box-shadow: none;
   pointer-events: none;
+  will-change: transform;
+}
+
+.piece.is-arriving {
+  animation: piece-arrive 220ms cubic-bezier(0.2, 0.85, 0.2, 1) both;
+}
+
+@keyframes piece-arrive {
+  from {
+    transform: translate(
+        calc(var(--move-dx, 0) * 135.135%),
+        calc(var(--move-dy, 0) * 135.135%)
+      )
+      scale(0.985);
+  }
+
+  72% {
+    transform: translate(0, 0) scale(1.015);
+  }
+
+  to {
+    transform: translate(0, 0) scale(1);
+  }
 }
 
 .piece.white {
@@ -791,6 +814,12 @@ body[data-screen="game"] .board {
 
 .piece.black.king::after {
   color: var(--king-on-black);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .piece.is-arriving {
+    animation: none;
+  }
 }
 
 .toast {
