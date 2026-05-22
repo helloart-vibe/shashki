@@ -475,6 +475,7 @@ body[data-screen="game"] .player-strip span {
 
 .opponent-thinking {
   margin: 14px 0 0;
+  width: 150px;
   font-weight: 400;
   line-height: 1.25;
   text-transform: none;
@@ -508,7 +509,7 @@ body[data-screen="game"] .player-strip span {
   }
 }
 
-.opponent-card {
+.opponent-stack {
   position: absolute;
   top: 50%;
   right: clamp(36px, 6vw, 120px);
@@ -793,13 +794,13 @@ body[data-screen="game"] .board {
   }
 
   body[data-screen="game"] .board-shell,
-  body[data-screen="game"] .opponent-card,
+  body[data-screen="game"] .opponent-stack,
   body[data-screen="game"] .game-actions {
     grid-column: auto;
     grid-row: auto;
   }
 
-  body[data-screen="game"] .opponent-card {
+  body[data-screen="game"] .opponent-stack {
     position: static;
     transform: none;
     justify-self: start;
