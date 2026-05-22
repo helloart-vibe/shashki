@@ -881,6 +881,11 @@ body[data-screen="game"] .board {
   line-height: 1.4;
 }
 
+.modal-input {
+  width: 100%;
+  margin-top: 24px;
+}
+
 .result-backdrop .modal p {
   display: none;
 }
@@ -890,6 +895,29 @@ body[data-screen="game"] .board {
   margin: 18px auto 0;
   color: var(--muted);
   font-size: 18px;
+}
+
+.name-backdrop {
+  backdrop-filter: blur(10px);
+  background: var(--modal-scrim);
+}
+
+.name-backdrop .modal {
+  width: min(420px, calc(100vw - 40px));
+  border: 0;
+  border-radius: 14px;
+  padding: 34px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+}
+
+.name-backdrop .modal h2 {
+  font-size: clamp(30px, 3.2vw, 42px);
+  font-weight: 400;
+}
+
+.name-backdrop .modal-actions {
+  grid-template-columns: 1fr;
+  margin-top: 16px;
 }
 
 .modal-actions {
@@ -959,7 +987,7 @@ body[data-screen="game"] .board {
 
   body[data-screen="game"] .app {
     grid-template-columns: 1fr;
-    grid-template-rows: auto;
+    grid-template-rows: auto auto auto auto;
     gap: 24px;
     width: min(720px, calc(100vw - 32px));
     padding: 72px 0 28px;
@@ -1012,16 +1040,25 @@ body[data-screen="game"] .board {
   body[data-screen="game"] .opponent-stack,
   body[data-screen="game"] .game-actions {
     grid-column: auto;
-    grid-row: auto;
+  }
+
+  body[data-screen="game"] .side-panel {
+    grid-row: 1;
+  }
+
+  body[data-screen="game"] .board-shell {
+    grid-row: 2;
   }
 
   body[data-screen="game"] .opponent-stack {
+    grid-row: 3;
     position: static;
     transform: none;
     justify-self: start;
   }
 
   body[data-screen="game"] .game-actions {
+    grid-row: 4;
     width: 100%;
   }
 

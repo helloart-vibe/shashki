@@ -38,6 +38,7 @@ const toastEl = document.querySelector("#toast");
 const modalBackdrop = document.querySelector("#modalBackdrop");
 const modalTitle = document.querySelector("#modalTitle");
 const modalText = document.querySelector("#modalText");
+const modalNameInput = document.querySelector("#modalNameInput");
 const modalActions = document.querySelector("#modalActions");
 
 const files = ["a", "b", "c", "d", "e", "f", "g", "h"];
@@ -281,6 +282,8 @@ function closeModal(dismissCurrent = false) {
   modalBackdrop.hidden = true;
   modalBackdrop.classList.remove("result-backdrop");
   modalBackdrop.classList.remove("soft-backdrop");
+  modalBackdrop.classList.remove("name-backdrop");
+  modalNameInput.hidden = true;
   modalActions.innerHTML = "";
 }
 
@@ -292,8 +295,10 @@ function showModal(key, title, text, actions) {
   const isSoftModal = key.startsWith("draw:") || key.startsWith("resign:") || key.startsWith("rematch:");
   modalBackdrop.classList.toggle("result-backdrop", isResultModal);
   modalBackdrop.classList.toggle("soft-backdrop", isSoftModal);
+  modalBackdrop.classList.remove("name-backdrop");
   modalTitle.textContent = title;
   modalText.textContent = text;
+  modalNameInput.hidden = true;
   modalActions.innerHTML = "";
 
   for (const action of actions) {
@@ -306,6 +311,38 @@ function showModal(key, title, text, actions) {
   }
 
   modalBackdrop.hidden = false;
+}
+
+function showNameJoinModal(code) {
+  activeModalKey = `name:${code}`;
+  modalBackdrop.classList.remove("result-backdrop");
+  modalBackdrop.classList.remove("soft-backdrop");
+  modalBackdrop.classList.add("name-backdrop");
+  modalTitle.textContent = "Введите имя";
+  modalText.textContent = `Комната ${code}`;
+  modalNameInput.hidden = false;
+  modalNameInput.value = nameInput.value.trim();
+  modalActions.innerHTML = "";
+
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "primary";
+  button.textContent = "Войти";
+  button.addEventListener("click", () => {
+    const name = modalNameInput.value.trim();
+    if (!name) {
+      modalText.textContent = "Введите имя, чтобы войти в комнату.";
+      modalNameInput.focus();
+      return;
+    }
+
+    nameInput.value = name;
+    closeModal(true);
+    joinRoom(code).catch(showError);
+  });
+  modalActions.append(button);
+  modalBackdrop.hidden = false;
+  window.setTimeout(() => modalNameInput.focus(), 0);
 }
 
 function resultActions() {
@@ -894,6 +931,13 @@ statusText.addEventListener("click", (event) => {
   if (event.target.classList.contains("room-code-inline")) copyRoomLink();
 });
 
+modalNameInput.addEventListener("keydown", (event) => {
+  if (event.key === "Enter" && !modalNameInput.hidden) {
+    event.preventDefault();
+    modalActions.querySelector("button")?.click();
+  }
+});
+
 nameInput.value = localStorage.getItem("russian-checkers:name") || "";
 applyTheme(localStorage.getItem(themeKey));
 applyUiTheme(localStorage.getItem(uiThemeKey));
@@ -909,7 +953,7 @@ if (initialRoom) {
     joinRoom(normalized).catch(showError);
   } else {
     render();
-    statusText.textContent = "Введите имя, чтобы войти в комнату.";
+    showNameJoinModal(normalized);
   }
 } else {
   render();
