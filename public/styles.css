@@ -196,10 +196,12 @@ input::placeholder {
 }
 
 body[data-screen="game"] .app {
-  grid-template-columns: minmax(210px, 270px) minmax(520px, 650px) minmax(150px, 210px);
+  position: relative;
+  grid-template-columns: minmax(210px, 270px) 1fr;
   grid-template-rows: 1fr auto;
-  gap: 48px 72px;
-  width: min(1480px, calc(100vw - 64px));
+  gap: 48px 0;
+  width: 100vw;
+  max-width: none;
   padding: 72px 0 84px;
 }
 
@@ -265,7 +267,7 @@ body[data-screen="game"] .status {
 }
 
 .game-actions {
-  grid-column: 2;
+  grid-column: 1 / -1;
   grid-row: 2;
   display: grid;
   grid-template-columns: repeat(3, minmax(140px, 1fr));
@@ -451,10 +453,10 @@ body[data-screen="game"] .player-strip span {
 }
 
 .opponent-card {
-  grid-column: 3;
-  grid-row: 1;
-  align-self: center;
-  justify-self: end;
+  position: absolute;
+  top: 50%;
+  right: clamp(36px, 6vw, 120px);
+  transform: translateY(-50%);
 }
 
 .score-text {
@@ -469,8 +471,9 @@ body[data-screen="game"] .player-strip span {
 }
 
 body[data-screen="game"] .board-shell {
-  grid-column: 2;
+  grid-column: 1 / -1;
   grid-row: 1;
+  justify-self: center;
 }
 
 .board {
@@ -687,6 +690,8 @@ body[data-screen="game"] .board {
   }
 
   body[data-screen="game"] .opponent-card {
+    position: static;
+    transform: none;
     justify-self: start;
   }
 
