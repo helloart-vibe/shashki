@@ -54,6 +54,7 @@ function publicRoom(room) {
     score: room.score,
     drawOffer: room.drawOffer,
     rematchOffer: room.rematchOffer,
+    resultNotice: room.resultNotice,
     shake: room.shake,
     theme: cleanTheme(room.theme),
     updatedAt: room.updatedAt,
@@ -89,6 +90,7 @@ function createRoom(name, theme) {
     },
     drawOffer: null,
     rematchOffer: null,
+    resultNotice: null,
     shake: null,
     theme: cleanTheme(theme),
     waiters: new Set(),
@@ -121,6 +123,10 @@ function awardWinner(room, winner) {
   };
 }
 
+function noticeId() {
+  return `${Date.now()}-${crypto.randomBytes(3).toString("hex")}`;
+}
+
 function startRematch(room) {
   const currentPlayers = ["white", "black"].map((color) => ({
     token: room.players[color],
@@ -149,6 +155,7 @@ function startRematch(room) {
   room.game = CheckersRules.createGame();
   room.drawOffer = null;
   room.rematchOffer = null;
+  room.resultNotice = null;
   return true;
 }
 
@@ -338,6 +345,37 @@ async function handleApi(req, res) {
       return;
     }
 
+    if (req.method === "POST" && parts.length === 4 && parts[3] === "resign") {
+      const body = await readBody(req);
+      const color = playerForToken(room, body.token)?.color;
+
+      if (!color) {
+        json(res, 403, { error: "Нет прав сдаться" });
+        return;
+      }
+
+      if (room.game.status !== "playing" || !isRoomReady(room)) {
+        json(res, 409, { error: "Сдаться можно только во время партии" });
+        return;
+      }
+
+      const winner = CheckersRules.opponent(color);
+      room.score[winner] = (room.score[winner] || 0) + 1;
+      room.game = CheckersRules.createGame();
+      room.drawOffer = null;
+      room.rematchOffer = null;
+      room.resultNotice = {
+        id: noticeId(),
+        type: "resign",
+        loser: color,
+        winner,
+        name: room.playerNames[color] || (color === "white" ? "Белые" : "Черные"),
+      };
+      touch(room);
+      json(res, 200, { room: publicRoom(room) });
+      return;
+    }
+
     if (req.method === "POST" && parts.length === 4 && parts[3] === "draw-offer") {
       const body = await readBody(req);
       const color = playerForToken(room, body.token)?.color;
@@ -380,6 +418,11 @@ async function handleApi(req, res) {
         room.score.white = (room.score.white || 0) + 1;
         room.score.black = (room.score.black || 0) + 1;
         room.game = CheckersRules.createGame();
+        room.resultNotice = {
+          id: noticeId(),
+          type: "draw",
+          acceptedBy: color,
+        };
       }
 
       room.drawOffer = null;

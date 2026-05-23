@@ -836,6 +836,19 @@ async function offerDraw() {
   render();
 }
 
+async function resignRoom() {
+  if (!room || !player.token) return;
+  const payload = await api(`/api/rooms/${room.code}/resign`, {
+    method: "POST",
+    body: JSON.stringify({ token: player.token }),
+  });
+  room = payload.room;
+  rememberMoveSound(room);
+  resetSelection();
+  showToast("Вы сдались. Началась новая партия.");
+  render();
+}
+
 async function respondDraw(accept) {
   if (!room || !player.token) return;
   const payload = await api(`/api/rooms/${room.code}/draw-respond`, {
@@ -942,6 +955,26 @@ async function leaveRoom(resign = false) {
 
 function maybeShowRoomModal() {
   if (!room || player.color === "spectator") return;
+
+  if (
+    room.resultNotice?.type === "resign" &&
+    room.resultNotice.loser &&
+    room.resultNotice.loser !== player.color
+  ) {
+    showModal(
+      `notice:${room.code}:${room.resultNotice.id}`,
+      "Ваш соперник сдался",
+      "Очко записано в ваш счёт. Новая партия уже началась.",
+      [
+        {
+          label: "Понятно",
+          className: "primary",
+          onClick: () => closeModal(true),
+        },
+      ],
+    );
+    return;
+  }
 
   if (room.rematchOffer && room.rematchOffer.from !== player.color && room.game.status === "finished") {
     showModal(
@@ -1144,7 +1177,7 @@ leaveRoomButton.addEventListener("click", () => {
 });
 
 surrenderButton.addEventListener("click", () => {
-  leaveRoom(true).catch(showError);
+  resignRoom().catch(showError);
 });
 
 drawButton.addEventListener("click", () => {
