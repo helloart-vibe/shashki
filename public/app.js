@@ -656,6 +656,7 @@ function renderStatus() {
     turnText.textContent = "-";
     lobbyActions.hidden = false;
     gameActions.hidden = true;
+    leaveRoomButton.hidden = true;
     playerStrip.hidden = true;
     roomCard.hidden = true;
     scoreCard.hidden = true;
@@ -680,6 +681,7 @@ function renderStatus() {
   titleText.textContent = "Идёт игра";
   lobbyActions.hidden = true;
   gameActions.hidden = false;
+  leaveRoomButton.hidden = false;
   playerStrip.hidden = false;
   surrenderButton.hidden = !(isRoomReady() && player.color !== "spectator" && room.game.status === "playing");
   drawButton.hidden = !(isRoomReady() && player.color !== "spectator" && room.game.status === "playing");

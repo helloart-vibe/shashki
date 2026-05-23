@@ -462,12 +462,16 @@ body[data-screen="game"] .status {
   width: 142px;
 }
 
-.game-actions .leave-action {
+.leave-action {
+  grid-column: 1;
+  grid-row: 2;
+  justify-self: start;
+  align-self: center;
   display: grid;
   place-items: center;
-  width: 58px;
-  min-width: 58px;
-  min-height: 58px;
+  width: 52px;
+  min-width: 52px;
+  min-height: 52px;
   padding: 0;
 }
 
@@ -493,6 +497,7 @@ body[data-screen="game"] .status {
 }
 
 .leave-action .action-icon {
+  width: 28px;
   -webkit-mask: url("/sign-out-light.svg") center / contain no-repeat;
   mask: url("/sign-out-light.svg") center / contain no-repeat;
   transform: scaleX(-1);
@@ -1329,9 +1334,12 @@ body[data-screen="game"] .board {
     width: min(142px, 100%);
   }
 
-  body[data-screen="game"] .game-actions .leave-action {
-    width: 58px;
-    min-width: 58px;
+  body[data-screen="game"] .leave-action {
+    grid-column: auto;
+    grid-row: 4;
+    justify-self: start;
+    width: 52px;
+    min-width: 52px;
   }
 
   body[data-screen="game"] .game-actions .shake-button {
@@ -1388,6 +1396,11 @@ body[data-screen="game"] .board {
 }
 
 @media (max-width: 460px) {
+  body[data-screen="game"] .leave-action {
+    grid-row: 5;
+    justify-self: center;
+  }
+
   body[data-screen="game"] .game-actions {
     justify-content: center;
   }
