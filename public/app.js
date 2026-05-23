@@ -61,6 +61,7 @@ const themeToggleEffect = new Audio("/theme-toggle.mp3");
 const roomEnterSound = new Audio("/room-enter.mp3");
 const secondPlayerOnlineSound = new Audio("/second-player-online.mp3");
 const shakeSound = new Audio("/shake.mp3");
+const hoverSound = new Audio("/hover.mp3");
 moveSound.preload = "auto";
 captureSound.preload = "auto";
 promotionSound.preload = "auto";
@@ -69,6 +70,7 @@ themeToggleEffect.preload = "auto";
 roomEnterSound.preload = "auto";
 secondPlayerOnlineSound.preload = "auto";
 shakeSound.preload = "auto";
+hoverSound.preload = "auto";
 let room = null;
 let player = { color: "spectator", token: null };
 let selected = null;
@@ -80,6 +82,7 @@ let showForcedCaptures = false;
 let activeModalKey = null;
 let lastMoveSoundKey = "";
 let lastMoveSoundAt = 0;
+let lastHoverSoundAt = 0;
 let moveRequestPending = false;
 let lastShakeId = "";
 let playedMoveSoundKeys = new Set();
@@ -142,6 +145,7 @@ function applySoundState(value) {
   captureSound.muted = nextState === "off";
   promotionSound.muted = nextState === "off";
   shakeSound.muted = nextState === "off";
+  hoverSound.muted = nextState === "off";
 }
 
 function toggleSound() {
@@ -186,6 +190,15 @@ function playShakeSound() {
   if (document.body.dataset.sound === "off") return;
   shakeSound.currentTime = 0;
   shakeSound.play().catch(() => {});
+}
+
+function playHoverSound() {
+  if (document.body.dataset.sound === "off") return;
+  const now = Date.now();
+  if (now - lastHoverSoundAt < 90) return;
+  lastHoverSoundAt = now;
+  hoverSound.currentTime = 0;
+  hoverSound.play().catch(() => {});
 }
 
 function maybePlayRemoteShake(nextRoom) {
@@ -1173,6 +1186,13 @@ for (const button of styleButtons) {
 
 uiThemeToggle.addEventListener("click", toggleUiTheme);
 soundToggle.addEventListener("click", toggleSound);
+
+document.addEventListener("mouseover", (event) => {
+  const target = event.target.closest("button:not(.cell), a, [role='button']");
+  if (!target || target.disabled || target.hidden || target.getAttribute("aria-disabled") === "true") return;
+  if (event.relatedTarget && target.contains(event.relatedTarget)) return;
+  playHoverSound();
+});
 
 leaveRoomButton.addEventListener("click", () => {
   leaveRoom().catch(showError);
