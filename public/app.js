@@ -39,6 +39,7 @@ const opponentScoreEl = document.querySelector("#opponentScore");
 const opponentColorEl = document.querySelector("#opponentColor");
 const opponentCapturedPiecesEl = document.querySelector("#opponentCapturedPieces");
 const toastEl = document.querySelector("#toast");
+const toastMessageEl = document.querySelector("#toastMessage");
 const modalBackdrop = document.querySelector("#modalBackdrop");
 const modalTitle = document.querySelector("#modalTitle");
 const modalText = document.querySelector("#modalText");
@@ -445,7 +446,7 @@ function isMyTurn() {
 }
 
 function showToast(message) {
-  toastEl.textContent = message;
+  toastMessageEl.textContent = message;
   toastEl.hidden = false;
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => {
