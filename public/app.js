@@ -60,6 +60,7 @@ const soundToggleEffect = new Audio("/sound-toggle.mp3");
 const themeToggleEffect = new Audio("/theme-toggle.mp3");
 const roomEnterSound = new Audio("/room-enter.mp3");
 const secondPlayerOnlineSound = new Audio("/second-player-online.mp3");
+const shakeSound = new Audio("/shake.mp3");
 moveSound.preload = "auto";
 captureSound.preload = "auto";
 promotionSound.preload = "auto";
@@ -67,6 +68,7 @@ soundToggleEffect.preload = "auto";
 themeToggleEffect.preload = "auto";
 roomEnterSound.preload = "auto";
 secondPlayerOnlineSound.preload = "auto";
+shakeSound.preload = "auto";
 let room = null;
 let player = { color: "spectator", token: null };
 let selected = null;
@@ -139,6 +141,7 @@ function applySoundState(value) {
   moveSound.muted = nextState === "off";
   captureSound.muted = nextState === "off";
   promotionSound.muted = nextState === "off";
+  shakeSound.muted = nextState === "off";
 }
 
 function toggleSound() {
@@ -177,6 +180,12 @@ function shakeBoard() {
   void boardEl.offsetWidth;
   boardEl.classList.add("is-shaking");
   boardEl.addEventListener("animationend", () => boardEl.classList.remove("is-shaking"), { once: true });
+}
+
+function playShakeSound() {
+  if (document.body.dataset.sound === "off") return;
+  shakeSound.currentTime = 0;
+  shakeSound.play().catch(() => {});
 }
 
 function maybePlayRemoteShake(nextRoom) {
@@ -857,6 +866,7 @@ async function offerRematch() {
 
 async function sendBoardShake() {
   shakeBoard();
+  playShakeSound();
   if (!room || !player.token) return;
 
   try {
