@@ -10,8 +10,8 @@ const turnText = document.querySelector("#turnText");
 const lobbyActions = document.querySelector("#lobbyActions");
 const gameActions = document.querySelector("#gameActions");
 const createRoomButton = document.querySelector("#createRoomButton");
+const surrenderButton = document.querySelector("#surrenderButton");
 const leaveRoomButton = document.querySelector("#leaveRoomButton");
-const leaveRoomText = document.querySelector("#leaveRoomText");
 const drawButton = document.querySelector("#drawButton");
 const shakeButton = document.querySelector("#shakeButton");
 const rematchButton = document.querySelector("#rematchButton");
@@ -681,8 +681,7 @@ function renderStatus() {
   lobbyActions.hidden = true;
   gameActions.hidden = false;
   playerStrip.hidden = false;
-  leaveRoomText.textContent =
-    isRoomReady() && player.color !== "spectator" && room.game.status === "playing" ? "Сдаться" : "Выйти";
+  surrenderButton.hidden = !(isRoomReady() && player.color !== "spectator" && room.game.status === "playing");
   drawButton.hidden = !(isRoomReady() && player.color !== "spectator" && room.game.status === "playing");
   rematchButton.hidden = !(
     isRoomReady() &&
@@ -916,7 +915,7 @@ async function submitMove(move) {
   }
 }
 
-async function leaveRoom() {
+async function leaveRoom(resign = false) {
   const currentRoom = room;
   const currentPlayer = player;
 
@@ -924,7 +923,7 @@ async function leaveRoom() {
     try {
       await api(`/api/rooms/${currentRoom.code}/leave`, {
         method: "POST",
-        body: JSON.stringify({ token: currentPlayer.token }),
+        body: JSON.stringify({ token: currentPlayer.token, resign }),
       });
     } catch (error) {
       showToast("Не удалось сообщить серверу о выходе, но вы вернулись в меню.");
@@ -1142,6 +1141,10 @@ soundToggle.addEventListener("click", toggleSound);
 
 leaveRoomButton.addEventListener("click", () => {
   leaveRoom().catch(showError);
+});
+
+surrenderButton.addEventListener("click", () => {
+  leaveRoom(true).catch(showError);
 });
 
 drawButton.addEventListener("click", () => {

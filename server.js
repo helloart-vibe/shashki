@@ -318,7 +318,7 @@ async function handleApi(req, res) {
         return;
       }
 
-      if (room.game.status === "playing" && isRoomReady(room)) {
+      if (body.resign === true && room.game.status === "playing" && isRoomReady(room)) {
         const winner = CheckersRules.opponent(color);
         room.game = {
           ...room.game,

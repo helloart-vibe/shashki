@@ -444,11 +444,22 @@ body[data-screen="game"] .status {
 }
 
 .game-actions .icon-action {
-  display: inline-flex;
-  gap: 22px;
+  display: grid;
+  grid-template-columns: 44px 1fr 44px;
+  gap: 0;
   align-items: center;
-  justify-content: center;
+  justify-content: stretch;
+  padding: 0 18px;
   font-weight: 700;
+}
+
+.game-actions .icon-action .action-icon {
+  justify-self: center;
+}
+
+.game-actions .icon-action span:last-child {
+  grid-column: 2;
+  justify-self: center;
 }
 
 .action-icon {
