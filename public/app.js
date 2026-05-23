@@ -59,7 +59,6 @@ const soundToggleEffect = new Audio("/sound-toggle.mp3");
 const themeToggleEffect = new Audio("/theme-toggle.mp3");
 const roomEnterSound = new Audio("/room-enter.mp3");
 const secondPlayerOnlineSound = new Audio("/second-player-online.mp3");
-const shakeHoverSound = new Audio("/shake-hover.mp3");
 moveSound.preload = "auto";
 captureSound.preload = "auto";
 promotionSound.preload = "auto";
@@ -67,8 +66,6 @@ soundToggleEffect.preload = "auto";
 themeToggleEffect.preload = "auto";
 roomEnterSound.preload = "auto";
 secondPlayerOnlineSound.preload = "auto";
-shakeHoverSound.preload = "auto";
-shakeHoverSound.loop = true;
 let room = null;
 let player = { color: "spectator", token: null };
 let selected = null;
@@ -140,8 +137,6 @@ function applySoundState(value) {
   moveSound.muted = nextState === "off";
   captureSound.muted = nextState === "off";
   promotionSound.muted = nextState === "off";
-  shakeHoverSound.muted = nextState === "off";
-  if (nextState === "off") stopShakeHoverSound();
 }
 
 function toggleSound() {
@@ -180,28 +175,6 @@ function shakeBoard() {
   void boardEl.offsetWidth;
   boardEl.classList.add("is-shaking");
   boardEl.addEventListener("animationend", () => boardEl.classList.remove("is-shaking"), { once: true });
-}
-
-function startBoardShake() {
-  boardEl.classList.remove("is-shaking");
-  boardEl.classList.add("is-shaking-loop");
-  playShakeHoverSound();
-}
-
-function stopBoardShake() {
-  boardEl.classList.remove("is-shaking-loop");
-  stopShakeHoverSound();
-}
-
-function playShakeHoverSound() {
-  if (document.body.dataset.sound === "off" || !shakeHoverSound.paused) return;
-  shakeHoverSound.currentTime = 0;
-  shakeHoverSound.play().catch(() => {});
-}
-
-function stopShakeHoverSound() {
-  shakeHoverSound.pause();
-  shakeHoverSound.currentTime = 0;
 }
 
 function moveSoundKey(nextRoom = room) {
@@ -1132,8 +1105,6 @@ drawButton.addEventListener("click", () => {
   offerDraw().catch(showError);
 });
 
-shakeButton.addEventListener("mouseenter", startBoardShake);
-shakeButton.addEventListener("mouseleave", stopBoardShake);
 shakeButton.addEventListener("focus", shakeBoard);
 shakeButton.addEventListener("click", shakeBoard);
 
