@@ -962,20 +962,20 @@ body[data-screen="game"] .board {
 
 .toast {
   position: fixed;
-  left: 36px;
+  right: 36px;
   bottom: 36px;
   z-index: 10;
   display: grid;
   grid-template-columns: 28px 1fr;
   gap: 24px;
-  align-items: start;
+  align-items: center;
   width: min(445px, calc(100vw - 72px));
   min-height: 112px;
   border: 1px solid var(--button-secondary-border);
   border-radius: 8px;
-  padding: 24px 28px 24px 20px;
-  color: var(--text-primary);
-  background: var(--page-bg);
+  padding: 24px 28px;
+  color: var(--ink);
+  background: var(--panel);
   box-shadow: 0 18px 42px rgba(0, 0, 0, 0.08);
   line-height: 1.2;
   text-align: left;
@@ -992,7 +992,6 @@ body[data-screen="game"] .board {
 
 .toast-message {
   max-width: 320px;
-  padding-top: 3px;
 }
 
 .modal-backdrop {
