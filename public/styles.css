@@ -328,12 +328,12 @@ body[data-ui-theme="dark"] .sound-icon {
 
 body[data-screen="game"] .app {
   position: relative;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(140px, 1fr) minmax(360px, 650px) minmax(140px, 1fr);
   grid-template-rows: 1fr auto;
-  gap: 48px 0;
-  width: 100vw;
-  max-width: none;
+  gap: 48px clamp(24px, 4vw, 72px);
+  width: min(100vw - 72px, 1680px);
   min-height: 100vh;
+  margin: 0 auto;
   padding: 72px 0 84px;
 }
 
@@ -341,14 +341,15 @@ body[data-screen="game"] .app {
   display: grid;
   gap: 52px;
   align-content: center;
+  min-width: 0;
 }
 
 body[data-screen="game"] .side-panel {
-  position: absolute;
-  top: clamp(120px, 18vh, 190px);
-  left: clamp(36px, 6vw, 120px);
+  position: static;
+  grid-column: 1;
+  grid-row: 1;
   z-index: 2;
-  width: min(270px, 24vw);
+  width: min(270px, 100%);
   align-self: auto;
   align-content: start;
   gap: 28px;
@@ -638,7 +639,7 @@ body[data-screen="game"] .player-strip span {
 .match-card {
   display: grid;
   align-content: space-between;
-  width: 224px;
+  width: min(224px, 100%);
   min-height: 180px;
   border: 1px solid var(--match-card-border);
   border-radius: 8px;
@@ -676,7 +677,7 @@ body[data-screen="game"] .player-strip span {
 
 .opponent-thinking {
   margin: 14px 0 0;
-  width: 224px;
+  width: min(224px, 100%);
   font-weight: 400;
   line-height: 1.25;
   text-transform: none;
@@ -765,9 +766,12 @@ body[data-screen="game"] .player-strip span {
 }
 
 .opponent-stack {
-  position: absolute;
-  top: calc(clamp(120px, 18vh, 190px) + 162px);
-  right: clamp(36px, 6vw, 120px);
+  grid-column: 3;
+  grid-row: 1;
+  justify-self: end;
+  width: min(224px, 100%);
+  min-width: 0;
+  align-self: center;
 }
 
 .score-text {
@@ -779,11 +783,13 @@ body[data-screen="game"] .player-strip span {
 .board-shell {
   display: grid;
   place-items: center;
+  min-width: 0;
 }
 
 body[data-screen="game"] .board-shell {
-  grid-column: 1 / -1;
+  grid-column: 2;
   grid-row: 1;
+  width: 100%;
   justify-self: center;
 }
 
@@ -801,7 +807,7 @@ body[data-screen="game"] .board-shell {
 }
 
 body[data-screen="game"] .board {
-  width: min(650px, calc(100vw - 32px), calc(100vh - 210px));
+  width: min(100%, 650px, calc(100vh - 210px));
 }
 
 .board.is-shaking {
