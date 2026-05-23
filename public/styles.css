@@ -339,9 +339,10 @@ body[data-ui-theme="dark"] .sound-icon {
 
 body[data-screen="game"] .app {
   position: relative;
-  grid-template-columns: minmax(140px, 1fr) minmax(360px, 650px) minmax(140px, 1fr);
-  grid-template-rows: 1fr auto;
-  gap: 48px clamp(24px, 4vw, 72px);
+  grid-template-columns: minmax(140px, 1fr) minmax(360px, 690px) minmax(140px, 1fr);
+  grid-template-rows: auto auto;
+  align-content: center;
+  gap: 36px clamp(24px, 4vw, 72px);
   width: min(100vw - 72px, 1680px);
   min-height: 100vh;
   margin: 0 auto;
@@ -361,7 +362,7 @@ body[data-screen="game"] .side-panel {
   grid-row: 1;
   z-index: 2;
   width: min(270px, 100%);
-  align-self: auto;
+  align-self: start;
   align-content: start;
   gap: 28px;
   padding-top: 0;
@@ -428,7 +429,7 @@ body[data-screen="game"] .status {
 }
 
 .game-actions {
-  grid-column: 1 / -1;
+  grid-column: 2;
   grid-row: 2;
   display: flex;
   flex-wrap: wrap;
@@ -651,7 +652,7 @@ body[data-screen="game"] .player-strip span {
   display: grid;
   align-content: space-between;
   width: min(224px, 100%);
-  min-height: 180px;
+  min-height: 150px;
   border: 1px solid var(--match-card-border);
   border-radius: 8px;
   padding: 18px 16px 16px;
@@ -782,7 +783,7 @@ body[data-screen="game"] .player-strip span {
   justify-self: end;
   width: min(224px, 100%);
   min-width: 0;
-  align-self: center;
+  align-self: start;
 }
 
 .score-text {
@@ -818,7 +819,7 @@ body[data-screen="game"] .board-shell {
 }
 
 body[data-screen="game"] .board {
-  width: min(100%, 650px, calc(100vh - 210px));
+  width: min(100%, 690px, calc(100vh - 178px));
 }
 
 .board.is-shaking {
