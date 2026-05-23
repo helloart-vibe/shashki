@@ -202,7 +202,7 @@ function rememberShake(nextRoom = room) {
 
 function moveSoundKey(nextRoom = room) {
   if (!nextRoom?.game?.lastMove) return "";
-  return `${nextRoom.code}:${nextRoom.version}:${JSON.stringify(nextRoom.game.lastMove)}`;
+  return `${nextRoom.code}:${JSON.stringify(nextRoom.game.lastMove)}`;
 }
 
 function rememberMoveSound(nextRoom = room) {
