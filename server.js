@@ -54,6 +54,7 @@ function publicRoom(room) {
     score: room.score,
     drawOffer: room.drawOffer,
     rematchOffer: room.rematchOffer,
+    shake: room.shake,
     theme: cleanTheme(room.theme),
     updatedAt: room.updatedAt,
     server: {
@@ -88,6 +89,7 @@ function createRoom(name, theme) {
     },
     drawOffer: null,
     rematchOffer: null,
+    shake: null,
     theme: cleanTheme(theme),
     waiters: new Set(),
     updatedAt: Date.now(),
@@ -439,6 +441,25 @@ async function handleApi(req, res) {
         room: publicRoom(room),
         player: playerForToken(room, body.token),
       });
+      return;
+    }
+
+    if (req.method === "POST" && parts.length === 4 && parts[3] === "shake") {
+      const body = await readBody(req);
+      const currentPlayer = playerForToken(room, body.token);
+
+      if (!currentPlayer) {
+        json(res, 403, { error: "Нет прав потрясти доску" });
+        return;
+      }
+
+      room.shake = {
+        id: crypto.randomBytes(8).toString("hex"),
+        from: currentPlayer.color,
+        at: Date.now(),
+      };
+      touch(room);
+      json(res, 200, { room: publicRoom(room) });
       return;
     }
 

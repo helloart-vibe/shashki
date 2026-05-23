@@ -78,6 +78,7 @@ let activeModalKey = null;
 let lastMoveSoundKey = "";
 let lastMoveSoundAt = 0;
 let moveRequestPending = false;
+let lastShakeId = "";
 let playedMoveSoundKeys = new Set();
 let boardMoveAnimation = null;
 let capturedPiecesSnapshot = null;
@@ -175,6 +176,18 @@ function shakeBoard() {
   void boardEl.offsetWidth;
   boardEl.classList.add("is-shaking");
   boardEl.addEventListener("animationend", () => boardEl.classList.remove("is-shaking"), { once: true });
+}
+
+function maybePlayRemoteShake(nextRoom) {
+  const shake = nextRoom?.shake;
+  if (!shake?.id || shake.id === lastShakeId) return;
+
+  lastShakeId = shake.id;
+  if (shake.from !== player.color) shakeBoard();
+}
+
+function rememberShake(nextRoom = room) {
+  lastShakeId = nextRoom?.shake?.id || "";
 }
 
 function moveSoundKey(nextRoom = room) {
@@ -769,6 +782,7 @@ async function createRoom() {
   player = payload.player;
   applyPlayerUpdate(payload.player);
   rememberMoveSound(room);
+  rememberShake(room);
   saveSession(room.code);
   history.replaceState(null, "", `/?room=${room.code}`);
   resetSelection();
@@ -793,6 +807,7 @@ async function joinRoom(code) {
   player = payload.player;
   applyPlayerUpdate(payload.player);
   rememberMoveSound(room);
+  rememberShake(room);
   saveSession(room.code);
   history.replaceState(null, "", `/?room=${room.code}`);
   resetSelection();
@@ -837,6 +852,22 @@ async function offerRematch() {
   room = payload.room;
   showToast("Предложение реванша отправлено.");
   render();
+}
+
+async function sendBoardShake() {
+  shakeBoard();
+  if (!room || !player.token) return;
+
+  try {
+    const payload = await api(`/api/rooms/${room.code}/shake`, {
+      method: "POST",
+      body: JSON.stringify({ token: player.token }),
+    });
+    room = payload.room;
+    if (room.shake?.id) lastShakeId = room.shake.id;
+  } catch {
+    // Тряска — игрушечное действие, поэтому не мешаем партии ошибкой сети.
+  }
 }
 
 async function respondRematch(accept) {
@@ -1070,6 +1101,7 @@ function startPolling() {
         room = payload.room;
         queueMoveAnimation(previousRoom, nextRoom);
         playGameSound(previousRoom, nextRoom);
+        maybePlayRemoteShake(nextRoom);
         render();
       }
     } catch (error) {
@@ -1105,8 +1137,7 @@ drawButton.addEventListener("click", () => {
   offerDraw().catch(showError);
 });
 
-shakeButton.addEventListener("focus", shakeBoard);
-shakeButton.addEventListener("click", shakeBoard);
+shakeButton.addEventListener("click", sendBoardShake);
 
 rematchButton.addEventListener("click", () => {
   offerRematch().catch(showError);
