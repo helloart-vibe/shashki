@@ -775,6 +775,8 @@ body[data-screen="game"] .opponent-thinking {
   display: flex;
   flex-wrap: wrap;
   gap: 10px 12px;
+  align-content: flex-start;
+  align-items: flex-start;
   width: 224px;
   margin-top: 34px;
 }
@@ -794,7 +796,9 @@ body[data-screen="game"] .opponent-captured {
 }
 
 .captured-piece {
+  flex: 0 0 24px;
   width: 24px;
+  height: 24px;
   aspect-ratio: 1;
   border-radius: 50%;
   background: currentColor;
