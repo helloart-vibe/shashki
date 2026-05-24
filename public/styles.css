@@ -357,14 +357,16 @@ body[data-screen="game"] .app {
 }
 
 body[data-screen="game"] .side-panel {
-  position: static;
+  display: contents;
+}
+
+body[data-screen="game"] .side-panel > div:first-child {
   grid-column: 1;
   grid-row: 1;
+  align-self: start;
+  justify-self: start;
   z-index: 2;
   width: min(270px, 100%);
-  align-self: start;
-  align-content: start;
-  gap: 108px;
   padding-top: 50px;
 }
 
@@ -730,10 +732,35 @@ body[data-screen="game"] .player-strip span {
   width: min(224px, 100%);
 }
 
+body[data-screen="game"] .self-stack,
+body[data-screen="game"] .opponent-stack {
+  display: grid;
+  grid-template-rows: 150px 16px 18px 41px 74px;
+  align-self: center;
+}
+
+body[data-screen="game"] .self-stack {
+  grid-column: 1;
+  grid-row: 1;
+  justify-self: start;
+}
+
+body[data-screen="game"] .self-stack .match-card,
+body[data-screen="game"] .opponent-stack .match-card {
+  grid-row: 1;
+}
+
 .thinking-text {
   margin: 14px 0 0;
   color: var(--status-blue);
   font-size: 14px;
+}
+
+body[data-screen="game"] .self-stack .thinking-text,
+body[data-screen="game"] .opponent-thinking {
+  grid-row: 3;
+  min-height: 18px;
+  margin: 0;
 }
 
 .opponent-thinking {
@@ -750,6 +777,12 @@ body[data-screen="game"] .player-strip span {
   gap: 10px 12px;
   width: 224px;
   margin-top: 34px;
+}
+
+body[data-screen="game"] .self-stack .captured-pieces,
+body[data-screen="game"] .opponent-captured {
+  grid-row: 5;
+  margin-top: 0;
 }
 
 .captured-pieces[hidden] {
@@ -1261,6 +1294,7 @@ body[data-screen="game"] .board {
   }
 
   body[data-screen="game"] .side-panel {
+    display: grid;
     position: static;
     width: auto;
     gap: 12px;
@@ -1401,11 +1435,20 @@ body[data-screen="game"] .board {
   }
 
   body[data-screen="game"] .self-stack {
+    grid-template-rows: none;
+    align-self: auto;
     width: 100%;
+  }
+
+  body[data-screen="game"] .opponent-stack {
+    grid-template-rows: none;
+    align-self: auto;
   }
 
   body[data-screen="game"] .thinking-text,
   body[data-screen="game"] .opponent-thinking {
+    grid-row: auto;
+    min-height: 0;
     width: 100%;
     margin: 0;
     font-size: 18px;
@@ -1417,6 +1460,7 @@ body[data-screen="game"] .board {
   }
 
   body[data-screen="game"] .captured-pieces {
+    grid-row: auto;
     width: 100%;
     margin-top: 22px;
     gap: 8px 10px;
