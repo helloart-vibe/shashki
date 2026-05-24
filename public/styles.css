@@ -906,6 +906,7 @@ body[data-screen="game"] .board {
   border-radius: 0;
   padding: 0;
   background: var(--light-cell);
+  transition: none;
 }
 
 .cell.dark {
@@ -913,11 +914,19 @@ body[data-screen="game"] .board {
 }
 
 .cell:hover {
+  opacity: 1;
+  transform: none;
   background: var(--light-cell);
 }
 
 .cell.dark:hover {
+  opacity: 1;
+  transform: none;
   background: var(--dark-cell);
+}
+
+.cell:active {
+  transform: none;
 }
 
 .cell.coord::after {
