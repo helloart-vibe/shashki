@@ -174,11 +174,14 @@ button {
   transition:
     opacity 140ms ease,
     transform 140ms ease,
-    background 140ms ease;
+    background 140ms ease,
+    filter 140ms ease;
 }
 
 button:hover {
-  opacity: 0.82;
+  opacity: 0.72;
+  transform: translateY(-1px);
+  filter: contrast(1.06);
 }
 
 button:active {
@@ -193,7 +196,7 @@ button.primary {
 
 button.primary:hover {
   background: var(--button-primary-bg);
-  opacity: 0.9;
+  opacity: 0.78;
 }
 
 button.danger {
@@ -204,7 +207,7 @@ button.danger {
 
 button.danger:hover {
   background: var(--button-primary-bg);
-  opacity: 0.9;
+  opacity: 0.78;
 }
 
 button:disabled {
