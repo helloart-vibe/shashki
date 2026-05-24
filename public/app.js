@@ -78,6 +78,8 @@ let pendingSteps = [];
 let legalMoves = [];
 let pollTimer = null;
 let toastTimer = null;
+let surrenderConfirmTimer = null;
+let surrenderConfirmInterval = null;
 let showForcedCaptures = false;
 let activeModalKey = null;
 let lastMoveSoundKey = "";
@@ -477,6 +479,10 @@ function showToast(message) {
 }
 
 function closeModal(dismissCurrent = false) {
+  clearTimeout(surrenderConfirmTimer);
+  clearInterval(surrenderConfirmInterval);
+  surrenderConfirmTimer = null;
+  surrenderConfirmInterval = null;
   if (dismissCurrent && activeModalKey) dismissedModalKeys.add(activeModalKey);
   modalBackdrop.hidden = true;
   modalBackdrop.classList.remove("result-backdrop");
@@ -491,7 +497,11 @@ function showModal(key, title, text, actions) {
   if (activeModalKey === key && !modalBackdrop.hidden) return;
   activeModalKey = key;
   const isResultModal = key.startsWith("loss:") || key.startsWith("win:");
-  const isSoftModal = key.startsWith("draw:") || key.startsWith("resign:") || key.startsWith("rematch:");
+  const isSoftModal =
+    key.startsWith("draw:") ||
+    key.startsWith("resign:") ||
+    key.startsWith("surrender-confirm:") ||
+    key.startsWith("rematch:");
   modalBackdrop.classList.toggle("result-backdrop", isResultModal);
   modalBackdrop.classList.toggle("soft-backdrop", isSoftModal);
   modalBackdrop.classList.remove("name-backdrop");
@@ -510,6 +520,33 @@ function showModal(key, title, text, actions) {
   }
 
   modalBackdrop.hidden = false;
+}
+
+function showSurrenderConfirm() {
+  if (!room || !player.token || room.game.status !== "playing") return;
+  let secondsLeft = 3;
+  const key = `surrender-confirm:${room.code}:${room.version}`;
+  const updateText = () => {
+    modalText.textContent = `Сдача через ${secondsLeft} сек.`;
+  };
+
+  showModal(key, "Сдаться?", `Сдача через ${secondsLeft} сек.`, [
+    {
+      label: "Отмена",
+      className: "secondary",
+      onClick: () => closeModal(),
+    },
+  ]);
+
+  surrenderConfirmInterval = setInterval(() => {
+    secondsLeft -= 1;
+    if (secondsLeft > 0) updateText();
+  }, 1000);
+
+  surrenderConfirmTimer = setTimeout(() => {
+    closeModal();
+    resignRoom().catch(showError);
+  }, 3000);
 }
 
 function showNameJoinModal(code) {
@@ -1199,7 +1236,7 @@ leaveRoomButton.addEventListener("click", () => {
 });
 
 surrenderButton.addEventListener("click", () => {
-  resignRoom().catch(showError);
+  showSurrenderConfirm();
 });
 
 drawButton.addEventListener("click", () => {
