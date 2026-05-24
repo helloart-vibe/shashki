@@ -510,9 +510,18 @@ body[data-screen="game"] .status {
   padding: 0;
   border-color: var(--button-secondary-border);
   border-radius: 8px;
-  background:
-    url("/hand-fist-light.svg") center / 31px 31px no-repeat,
-    var(--button-secondary-bg);
+  background: var(--button-secondary-bg);
+}
+
+.game-actions .shake-button::before {
+  display: block;
+  width: 31px;
+  aspect-ratio: 1;
+  margin: 0 auto;
+  background: currentColor;
+  content: "";
+  -webkit-mask: url("/hand-fist-light.svg") center / contain no-repeat;
+  mask: url("/hand-fist-light.svg") center / contain no-repeat;
 }
 
 .game-actions .shake-button:hover {
