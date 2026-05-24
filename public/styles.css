@@ -166,6 +166,7 @@ button {
   border: 1px solid var(--button-secondary-border);
   border-radius: 8px;
   color: var(--button-secondary-text);
+  font-weight: 400;
   background: var(--button-secondary-bg);
   cursor: pointer;
   transition:
@@ -453,7 +454,7 @@ body[data-screen="game"] .status {
   justify-content: center;
   min-height: 52px;
   padding: 0 22px;
-  font-weight: 700;
+  font-weight: 400;
 }
 
 .game-actions .surrender-action {
