@@ -23,6 +23,8 @@
   --king-on-black: #000000;
   --capture-dot: #777777;
   --selected-ring: rgba(0, 0, 0, 0.72);
+  --piece-shadow: 8px 8px 18px rgba(0, 0, 0, 0.16);
+  --white-piece-shadow: 8px 8px 18px rgba(0, 0, 0, 0.12);
   --board-radius: clamp(28px, 4vw, 56px);
   --board-shadow: none;
   color-scheme: light;
@@ -1015,7 +1017,7 @@ body[data-screen="game"] .board {
   width: 74%;
   aspect-ratio: 1;
   border-radius: 50%;
-  box-shadow: none;
+  box-shadow: var(--piece-shadow);
   pointer-events: none;
   will-change: transform;
 }
@@ -1044,6 +1046,7 @@ body[data-screen="game"] .board {
 
 .piece.white {
   border: 0;
+  box-shadow: var(--white-piece-shadow);
   background: var(--white-piece);
 }
 
