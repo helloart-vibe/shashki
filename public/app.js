@@ -53,6 +53,22 @@ const soundKey = "russian-checkers:sound";
 const themes = new Set(["midnight", "sand", "sky", "lime", "walnut"]);
 const uiThemes = new Set(["light", "dark"]);
 const soundStates = new Set(["on", "off"]);
+const silentHoverButtonIds = new Set([
+  "createRoomButton",
+  "leaveRoomButton",
+  "surrenderButton",
+  "drawButton",
+  "shakeButton",
+]);
+const silentHoverButtonLabels = new Set([
+  "Создать комнату",
+  "Войти",
+  "Выйти",
+  "Тряска",
+  "Ничья",
+  "Сдаться",
+  "Отмена",
+]);
 const moveSound = new Audio("/move.mp3");
 const captureSound = new Audio("/capture.mp3");
 const promotionSound = new Audio("/promotion.mp3");
@@ -201,6 +217,11 @@ function playHoverSound() {
   lastHoverSoundAt = now;
   hoverSound.currentTime = 0;
   hoverSound.play().catch(() => {});
+}
+
+function shouldSkipHoverSound(target) {
+  const label = target.textContent.trim();
+  return silentHoverButtonIds.has(target.id) || silentHoverButtonLabels.has(label);
 }
 
 function maybePlayRemoteShake(nextRoom) {
@@ -1227,6 +1248,7 @@ soundToggle.addEventListener("click", toggleSound);
 document.addEventListener("mouseover", (event) => {
   const target = event.target.closest("button:not(.cell), a, [role='button']");
   if (!target || target.disabled || target.hidden || target.getAttribute("aria-disabled") === "true") return;
+  if (shouldSkipHoverSound(target)) return;
   if (event.relatedTarget && target.contains(event.relatedTarget)) return;
   playHoverSound();
 });
