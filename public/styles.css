@@ -725,8 +725,13 @@ body[data-screen="game"] .player-strip span {
   line-height: 1.2;
 }
 
+.self-stack {
+  display: grid;
+  width: min(224px, 100%);
+}
+
 .thinking-text {
-  margin: -8px 0 0;
+  margin: 14px 0 0;
   color: var(--status-blue);
   font-size: 14px;
 }
@@ -744,7 +749,7 @@ body[data-screen="game"] .player-strip span {
   flex-wrap: wrap;
   gap: 10px 12px;
   width: 224px;
-  margin-top: 28px;
+  margin-top: 34px;
 }
 
 .captured-pieces[hidden] {
@@ -769,7 +774,7 @@ body[data-screen="game"] .player-strip span {
 }
 
 .captured-piece.black {
-  color: var(--black-piece);
+  color: #646464;
 }
 
 .captured-piece.is-new {
@@ -1395,6 +1400,10 @@ body[data-screen="game"] .board {
     font-size: 56px;
   }
 
+  body[data-screen="game"] .self-stack {
+    width: 100%;
+  }
+
   body[data-screen="game"] .thinking-text,
   body[data-screen="game"] .opponent-thinking {
     width: 100%;
@@ -1402,9 +1411,14 @@ body[data-screen="game"] .board {
     font-size: 18px;
   }
 
+  body[data-screen="game"] .self-stack .thinking-text,
+  body[data-screen="game"] .opponent-thinking {
+    margin-top: 12px;
+  }
+
   body[data-screen="game"] .captured-pieces {
     width: 100%;
-    margin-top: 12px;
+    margin-top: 22px;
     gap: 8px 10px;
   }
 
