@@ -901,7 +901,7 @@ body[data-screen="game"] .board-shell {
   display: grid;
   grid-template-columns: repeat(8, 1fr);
   grid-template-rows: repeat(8, 1fr);
-  width: min(738px, calc(100vw - 29px), calc(100vh - 58px));
+  width: min(100%, 738px, calc(100vw - 29px), calc(100vh - 58px));
   aspect-ratio: 1;
   border: clamp(6px, 0.85vw, 11px) solid var(--dark-cell);
   border-radius: var(--board-radius);
