@@ -1263,7 +1263,26 @@ body[data-screen="game"] .board {
   grid-column: 1 / -1;
 }
 
-@media (max-width: 820px) {
+@media (min-width: 1001px) and (max-width: 1600px) {
+  body[data-screen="game"] .side-panel > div:first-child {
+    width: min(224px, 100%);
+    padding-top: 12px;
+  }
+
+  body[data-screen="game"] h1 {
+    font-size: clamp(38px, 3vw, 48px);
+    line-height: 1.04;
+    white-space: nowrap;
+  }
+
+  body[data-screen="game"] .status {
+    margin-top: 16px;
+    font-size: 16px;
+    line-height: 1.25;
+  }
+}
+
+@media (max-width: 1000px) {
   .site-header {
     top: 18px;
     left: 28px;
