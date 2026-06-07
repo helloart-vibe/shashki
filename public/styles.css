@@ -2469,6 +2469,11 @@ body[data-theme="super"] .piece.black.king::after {
 }
 
 @media (max-width: 1000px) {
+  body {
+    display: flex;
+    flex-direction: column;
+  }
+
   .site-header {
     top: 18px;
     left: 28px;
@@ -2480,11 +2485,13 @@ body[data-theme="super"] .piece.black.king::after {
   }
 
   .site-footer {
+    order: 2;
     position: static;
     margin: 0 28px 24px;
   }
 
   .app {
+    order: 1;
     grid-template-columns: 1fr;
     align-items: start;
     gap: 28px;
@@ -2635,6 +2642,8 @@ body[data-theme="super"] .piece.black.king::after {
   body[data-theme="super"][data-screen="game"] .self-stack,
   body[data-theme="super"][data-screen="game"] .opponent-stack {
     position: static;
+    display: flex;
+    flex-direction: column;
     grid-column: 1;
     grid-row: auto;
     justify-self: stretch;
@@ -2793,9 +2802,19 @@ body[data-theme="super"] .piece.black.king::after {
   }
 
   body[data-theme="super"][data-screen="game"] .reaction-actions {
-    position: static;
-    flex: 0 0 100%;
+    position: static !important;
+    top: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    left: auto !important;
+    display: grid !important;
+    grid-template-columns: repeat(3, max-content);
+    gap: 0;
     justify-content: center;
+    width: 100%;
+    margin-top: 16px;
+    order: 2;
+    transform: none !important;
   }
 
   body[data-theme="super"][data-screen="game"] .reaction-bubble {
