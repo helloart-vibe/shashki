@@ -2569,7 +2569,8 @@ body[data-theme="super"] .piece.black.king::after {
   }
 
   body[data-theme="super"][data-screen="lobby"] .board {
-    width: min(100%, 520px);
+    width: min(520px, calc(100vw - 56px), calc(100vh - 120px));
+    max-width: 100%;
     min-width: 0;
   }
 
@@ -2580,6 +2581,111 @@ body[data-theme="super"] .piece.black.king::after {
   body[data-theme="super"][data-screen="lobby"] .site-footer {
     position: static;
     margin: 0 28px 24px;
+  }
+
+  body[data-theme="super"] .music-toggle {
+    top: 12px;
+    right: 68px;
+  }
+
+  body[data-theme="super"][data-screen="game"] .sound-toggle {
+    top: 18px;
+    right: 16px;
+  }
+
+  body[data-theme="super"][data-screen="game"] .music-toggle {
+    top: 18px;
+    right: 68px;
+  }
+
+  body[data-theme="super"][data-screen="game"] .app {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto auto;
+    align-content: start;
+    justify-content: center;
+    gap: 20px;
+    width: min(650px, calc(100vw - 48px));
+    min-height: auto;
+    padding: 88px 0 112px;
+  }
+
+  body[data-theme="super"][data-screen="game"] .board-shell {
+    grid-column: 1;
+    grid-row: 2;
+    width: 100%;
+  }
+
+  body[data-theme="super"][data-screen="game"] .board {
+    width: min(100%, 560px, calc(100vw - 48px), calc(100vh - 250px));
+    min-width: 0;
+  }
+
+  body[data-theme="super"][data-screen="game"] .score-card {
+    top: 20px;
+    width: 102px;
+    min-height: 40px;
+    padding: 0 18px;
+  }
+
+  body[data-theme="super"][data-screen="game"] .player-strip {
+    top: 64px;
+    right: 16px;
+  }
+
+  body[data-theme="super"][data-screen="game"] .self-stack,
+  body[data-theme="super"][data-screen="game"] .opponent-stack {
+    position: static;
+    grid-column: 1;
+    grid-row: auto;
+    justify-self: stretch;
+    justify-items: stretch;
+    width: 100%;
+    margin-top: 0;
+  }
+
+  body[data-theme="super"][data-screen="game"] .opponent-stack {
+    grid-row: 1;
+  }
+
+  body[data-theme="super"][data-screen="game"] .self-stack {
+    grid-row: 3;
+  }
+
+  body[data-theme="super"][data-screen="game"] .game-actions {
+    bottom: 22px;
+    right: 20px;
+    left: auto;
+    gap: 12px;
+    transform: none;
+  }
+
+  body[data-theme="super"][data-screen="game"] .game-actions .icon-action {
+    width: 52px;
+    min-width: 52px;
+    height: 52px;
+    min-height: 52px;
+    border-radius: 20px;
+  }
+
+  body[data-theme="super"][data-screen="game"] .leave-action {
+    bottom: 22px;
+    left: 20px;
+    width: 52px;
+    min-width: 52px;
+    height: 52px;
+    min-height: 52px;
+    border-radius: 20px;
+  }
+
+  body[data-theme="super"][data-screen="game"] .super-room-code {
+    bottom: 22px;
+    left: 84px;
+    width: 98px;
+    min-width: 98px;
+    height: 52px;
+    min-height: 52px;
+    border-radius: 20px;
+    font-size: 16px;
   }
 
   .style-picker {
@@ -2758,6 +2864,42 @@ body[data-theme="super"] .piece.black.king::after {
   body[data-screen="game"] .captured-piece {
     width: 20px;
   }
+
+  body[data-theme="super"][data-screen="game"] .app {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto auto;
+  }
+
+  body[data-theme="super"][data-screen="game"] .opponent-stack {
+    grid-column: 1;
+    grid-row: 1;
+    justify-self: stretch;
+  }
+
+  body[data-theme="super"][data-screen="game"] .board-shell {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  body[data-theme="super"][data-screen="game"] .side-panel {
+    grid-column: 1;
+    grid-row: 3;
+  }
+
+  body[data-theme="super"][data-screen="game"] .self-stack {
+    grid-row: auto;
+    justify-self: stretch;
+  }
+
+  body[data-theme="super"][data-screen="game"] .game-actions {
+    grid-column: 1;
+    grid-row: 4;
+  }
+
+  body[data-theme="super"][data-screen="game"] .super-room-code {
+    left: 84px;
+    margin: 0;
+  }
 }
 
 @media (max-width: 460px) {
@@ -2791,5 +2933,17 @@ body[data-theme="super"] .piece.black.king::after {
 
   .score-card > div:last-child {
     text-align: left;
+  }
+
+  body[data-theme="super"][data-screen="game"] .super-room-code {
+    left: 76px;
+    width: 92px;
+    min-width: 92px;
+    margin: 0;
+    font-size: 15px;
+  }
+
+  body[data-theme="super"][data-screen="game"] .game-actions {
+    right: 18px;
   }
 }
