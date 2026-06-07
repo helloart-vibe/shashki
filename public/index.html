@@ -16,9 +16,20 @@
     <header class="site-header">
       <span>GOSHASHKI</span>
     </header>
+    <footer class="site-footer">
+      <span>telegram</span>
+      <span>hello@goshashki.ru</span>
+    </footer>
     <button class="icon-button sound-toggle" id="soundToggle" type="button" aria-label="Выключить звук">
       <img class="sound-icon sound-on-icon" src="/speaker-high-light.svg" alt="" aria-hidden="true" />
       <img class="sound-icon sound-off-icon" src="/speaker-simple-x-light.svg" alt="" aria-hidden="true" />
+    </button>
+    <button class="icon-button music-toggle" id="musicToggle" type="button" aria-label="Выключить музыку">
+      <span class="equalizer-icon" aria-hidden="true">
+        <span></span>
+        <span></span>
+        <span></span>
+      </span>
     </button>
     <button class="icon-button theme-toggle" id="uiThemeToggle" type="button" aria-label="Включить темную тему">
       <img class="theme-icon sun-icon" src="/sun-light.svg" alt="" aria-hidden="true" />
@@ -55,6 +66,9 @@
             <button class="style-swatch" type="button" data-theme="sand" aria-label="Светло-коричневый стиль">
               <span></span>
             </button>
+            <button class="style-swatch super-swatch" type="button" data-theme="super" aria-label="Супер комната">
+              <span></span>
+            </button>
           </div>
         </div>
 
@@ -81,7 +95,7 @@
           </div>
         </div>
 
-        <div class="self-stack">
+        <div class="self-stack" id="selfStack">
           <div class="match-card self-card" id="selfCard" hidden>
             <span id="selfName">-</span>
             <strong id="selfScore">0</strong>
@@ -105,7 +119,9 @@
       </section>
 
       <section class="board-shell" aria-label="Игровая доска">
+        <div class="reaction-bubble" id="reactionBubble" hidden></div>
         <div class="board" id="board"></div>
+        <canvas class="ripple-canvas" id="rippleCanvas" aria-hidden="true"></canvas>
       </section>
 
       <div class="opponent-stack">
@@ -121,8 +137,20 @@
       <button class="leave-action" id="leaveRoomButton" type="button" aria-label="Выйти" hidden>
         <span class="action-icon"></span>
       </button>
+      <button class="super-room-code" id="superRoomCodeButton" type="button" hidden>----</button>
 
       <div class="room-actions game-actions" id="gameActions" hidden>
+        <div class="reaction-actions" id="reactionActions" hidden>
+          <button class="reaction-button" type="button" data-reaction="блин">блин</button>
+          <button class="reaction-button" type="button" data-reaction="ой">ой</button>
+          <button class="reaction-button" type="button" data-reaction="упс...">упс...</button>
+          <button class="reaction-button" type="button" data-reaction="хорооош!">хорооош!</button>
+          <button class="reaction-button" type="button" data-reaction="круто!">круто!</button>
+          <button class="reaction-button" type="button" data-reaction="мощно">мощно</button>
+          <button class="reaction-button" type="button" data-reaction="ходи!">ходи!</button>
+          <button class="reaction-button" type="button" data-reaction="не спи">не спи</button>
+          <button class="reaction-button" type="button" data-reaction="ты тут?">ты тут?</button>
+        </div>
         <button class="danger icon-action surrender-action" id="surrenderButton" type="button">
           <span class="action-icon"></span>
           <span>Сдаться</span>
@@ -135,11 +163,6 @@
         <button id="rematchButton" type="button">Реванш</button>
       </div>
     </main>
-
-    <footer class="site-footer">
-      <span>telegram</span>
-      <span>hello@goshashki.com</span>
-    </footer>
 
     <div class="toast" id="toast" role="status" aria-live="polite" hidden>
       <span class="toast-icon" aria-hidden="true"></span>

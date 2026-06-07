@@ -5,7 +5,8 @@
   "description": "Web version of Russian checkers with two-player online rooms.",
   "scripts": {
     "start": "node server.js",
-    "dev": "node server.js"
+    "dev": "node server.js",
+    "test": "node tests/rules.test.js"
   },
   "engines": {
     "node": ">=18"

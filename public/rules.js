@@ -161,6 +161,15 @@
     return sequences;
   }
 
+  function captureCount(move) {
+    return move.steps.reduce((count, step) => count + (step.capture ? 1 : 0), 0);
+  }
+
+  function longestCapturesOnly(moves) {
+    const maxCaptures = Math.max(...moves.map(captureCount));
+    return moves.filter((move) => captureCount(move) === maxCaptures);
+  }
+
   function getLegalMoves(game, color = game.turn) {
     if (!game || game.status !== "playing" || color !== game.turn) return [];
 
@@ -177,7 +186,7 @@
       }
     }
 
-    return captures.length > 0 ? captures : quietMoves;
+    return captures.length > 0 ? longestCapturesOnly(captures) : quietMoves;
   }
 
   function samePoint(a, b) {

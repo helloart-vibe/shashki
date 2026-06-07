@@ -10,7 +10,21 @@ const PUBLIC_DIR = path.join(__dirname, "public");
 const APP_VERSION = "2026-05-21-sync-debug";
 const INSTANCE_ID = crypto.randomBytes(4).toString("hex");
 const rooms = new Map();
-const THEMES = new Set(["midnight", "sand", "sky", "lime", "walnut"]);
+const THEMES = new Set(["sky", "walnut", "midnight", "lime", "sand", "super"]);
+const REACTIONS = new Set([
+  "блин",
+  "ой",
+  "упс...",
+  "хорооош!",
+  "круто!",
+  "мощно",
+  "ходи!",
+  "не спи",
+  "ты тут?",
+  "упс",
+  "ниииплооохоо!",
+  "хорооош",
+]);
 
 const mimeTypes = {
   ".html": "text/html; charset=utf-8",
@@ -37,6 +51,11 @@ function cleanTheme(theme) {
   return THEMES.has(theme) ? theme : "midnight";
 }
 
+function cleanReaction(reaction) {
+  const value = String(reaction || "").trim().replace(/\s+/g, " ");
+  return REACTIONS.has(value) ? value : "";
+}
+
 function isRoomReady(room) {
   return Boolean(room.players.white && room.players.black);
 }
@@ -56,6 +75,7 @@ function publicRoom(room) {
     rematchOffer: room.rematchOffer,
     resultNotice: room.resultNotice,
     shake: room.shake,
+    reaction: room.reaction,
     theme: cleanTheme(room.theme),
     updatedAt: room.updatedAt,
     server: {
@@ -92,6 +112,7 @@ function createRoom(name, theme) {
     rematchOffer: null,
     resultNotice: null,
     shake: null,
+    reaction: null,
     theme: cleanTheme(theme),
     waiters: new Set(),
     updatedAt: Date.now(),
@@ -156,6 +177,7 @@ function startRematch(room) {
   room.drawOffer = null;
   room.rematchOffer = null;
   room.resultNotice = null;
+  room.reaction = null;
   return true;
 }
 
@@ -340,6 +362,7 @@ async function handleApi(req, res) {
       room.players[color] = null;
       room.drawOffer = null;
       room.rematchOffer = null;
+      room.reaction = null;
       touch(room);
       json(res, 200, { room: publicRoom(room) });
       return;
@@ -364,6 +387,7 @@ async function handleApi(req, res) {
       room.game = CheckersRules.createGame();
       room.drawOffer = null;
       room.rematchOffer = null;
+      room.reaction = null;
       room.resultNotice = {
         id: noticeId(),
         type: "resign",
@@ -418,6 +442,7 @@ async function handleApi(req, res) {
         room.score.white = (room.score.white || 0) + 1;
         room.score.black = (room.score.black || 0) + 1;
         room.game = CheckersRules.createGame();
+        room.reaction = null;
         room.resultNotice = {
           id: noticeId(),
           type: "draw",
@@ -499,6 +524,33 @@ async function handleApi(req, res) {
       room.shake = {
         id: crypto.randomBytes(8).toString("hex"),
         from: currentPlayer.color,
+        at: Date.now(),
+      };
+      touch(room);
+      json(res, 200, { room: publicRoom(room) });
+      return;
+    }
+
+    if (req.method === "POST" && parts.length === 4 && parts[3] === "reaction") {
+      const body = await readBody(req);
+      const currentPlayer = playerForToken(room, body.token);
+      const text = cleanReaction(body.reaction);
+
+      if (!currentPlayer) {
+        json(res, 403, { error: "Нет прав отправить реакцию" });
+        return;
+      }
+
+      if (!text) {
+        json(res, 400, { error: "Такой реакции нет" });
+        return;
+      }
+
+      room.reaction = {
+        id: crypto.randomBytes(8).toString("hex"),
+        from: currentPlayer.color,
+        name: currentPlayer.name || (currentPlayer.color === "white" ? "Белые" : "Черные"),
+        text,
         at: Date.now(),
       };
       touch(room);
