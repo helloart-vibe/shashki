@@ -2919,6 +2919,43 @@ body[data-theme="super"] .piece.black.king::after {
     left: 84px;
     margin: 0;
   }
+
+  body[data-theme="super"][data-screen="game"] .self-stack,
+  body[data-theme="super"][data-screen="game"] .opponent-stack {
+    align-items: center;
+  }
+
+  body[data-theme="super"][data-screen="game"] .self-stack .match-card,
+  body[data-theme="super"][data-screen="game"] .opponent-stack .match-card {
+    width: min(340px, 100%);
+    min-width: 0;
+    min-height: 68px;
+    height: 68px;
+    border-radius: 16px;
+    padding: 13px 14px 12px;
+  }
+
+  body[data-theme="super"][data-screen="game"] .match-card span {
+    font-size: 11px;
+    line-height: 1;
+  }
+
+  body[data-theme="super"][data-screen="game"] .match-card b {
+    font-size: 10px;
+    line-height: 1;
+  }
+
+  body[data-theme="super"][data-screen="game"] .match-card strong {
+    gap: 7px;
+    font-size: 11px;
+    line-height: 1;
+  }
+
+  body[data-theme="super"][data-screen="game"] .match-card strong::before {
+    flex-basis: 6px;
+    width: 6px;
+    height: 6px;
+  }
 }
 
 @media (max-width: 460px) {
