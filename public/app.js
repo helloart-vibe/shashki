@@ -75,8 +75,9 @@ const soundToggleEffect = new Audio("/sound-toggle.mp3");
 const themeToggleEffect = new Audio("/theme-toggle.mp3");
 const roomEnterSound = new Audio("/room-enter.mp3");
 const secondPlayerOnlineSound = new Audio("/second-player-online.mp3");
-const shakeSound = new Audio("/ripple.mp3");
+const shakeSound = new Audio("/shake.mp3");
 const reactionSound = new Audio("/reaction-pop.mp3");
+const linkHoverSound = new Audio("/link-hover.mp3");
 const superAmbientMusic = new Audio("/super-ambient.mp3");
 moveSound.preload = "auto";
 superMoveSound.preload = "auto";
@@ -92,6 +93,7 @@ roomEnterSound.preload = "auto";
 secondPlayerOnlineSound.preload = "auto";
 shakeSound.preload = "auto";
 reactionSound.preload = "auto";
+linkHoverSound.preload = "auto";
 superAmbientMusic.preload = "auto";
 superAmbientMusic.loop = true;
 superAmbientMusic.volume = 0.6;
@@ -190,6 +192,7 @@ function applySoundState(value) {
   loseSound.muted = nextState === "off";
   shakeSound.muted = nextState === "off";
   reactionSound.muted = nextState === "off";
+  linkHoverSound.muted = nextState === "off";
 }
 
 function toggleSound() {
@@ -239,6 +242,12 @@ function playSecondPlayerOnlineSound() {
   if (document.body.dataset.sound === "off") return;
   secondPlayerOnlineSound.currentTime = 0;
   secondPlayerOnlineSound.play().catch(() => {});
+}
+
+function playLinkHoverSound() {
+  if (document.body.dataset.sound === "off") return;
+  linkHoverSound.currentTime = 0;
+  linkHoverSound.play().catch(() => {});
 }
 
 function maybePlaySecondPlayerOnline(connectedPlayers) {
@@ -572,6 +581,12 @@ function drawRippleFrame(now) {
 }
 
 function shakeBoard(event) {
+  playShakeSound();
+  boardEl.classList.remove("is-shaking");
+  void boardEl.offsetWidth;
+  boardEl.classList.add("is-shaking");
+  boardEl.addEventListener("animationend", () => boardEl.classList.remove("is-shaking"), { once: true });
+
   if (rippleFrame) cancelAnimationFrame(rippleFrame);
   rippleFrame = 0;
   rippleSnapshot = null;
@@ -905,10 +920,9 @@ function renderCapturedPiecesRows() {
     capturedPiecesRoomCode = room.code;
   }
 
-  selfCapturedPiecesEl.hidden = true;
-  opponentCapturedPiecesEl.hidden = true;
-  selfCapturedPiecesEl.innerHTML = "";
-  opponentCapturedPiecesEl.innerHTML = "";
+  const opponent = CheckersRules.opponent(player.color);
+  renderCapturedPieces(selfCapturedPiecesEl, player.color, capturedByColor);
+  renderCapturedPieces(opponentCapturedPiecesEl, opponent, capturedByColor);
   capturedPiecesSnapshot = { ...capturedByColor };
   return capturedByColor;
 }
@@ -1930,6 +1944,15 @@ superRoomCodeButton.addEventListener("click", () => {
 
 statusText.addEventListener("click", (event) => {
   if (event.target.classList.contains("room-code-inline")) copyRoomLink();
+});
+
+document.addEventListener("mouseover", (event) => {
+  if (event.target.closest(".board")) return;
+  const linkLike = event.target.closest("button, .room-code-inline");
+  if (!linkLike || linkLike.hidden || linkLike.disabled) return;
+  if (linkLike.matches("#createRoomButton, #joinForm button")) return;
+  if (event.relatedTarget && linkLike.contains(event.relatedTarget)) return;
+  playLinkHoverSound();
 });
 
 modalNameInput.addEventListener("keydown", (event) => {

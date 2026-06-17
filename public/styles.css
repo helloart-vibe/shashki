@@ -33,12 +33,12 @@
 }
 
 body[data-ui-theme="dark"] {
-  --bg: #302e2e;
+  --bg: #252323;
   --ink: #ffffff;
   --muted: #a8a4a4;
-  --panel: #302e2e;
+  --panel: #252323;
   --line: #8c8a8a;
-  --field: #444141;
+  --field: #373434;
   --button-primary-bg: #000000;
   --button-primary-text: #ffffff;
   --button-secondary-bg: #656463;
@@ -64,15 +64,17 @@ body[data-theme="midnight"] {
 }
 
 body[data-theme="sand"] {
-  --dark-cell: #c8bbad;
-  --light-cell: #f1f1f1;
-  --white-piece: #ffffff;
-  --black-piece: #927d66;
-  --king-on-white: #c8bbad;
-  --king-on-black: #d3c6b8;
-  --capture-dot: #ffffff;
-  --selected-ring: rgba(146, 125, 102, 0.82);
-  --board-shadow: 0 22px 54px rgba(146, 125, 102, 0.15);
+  --dark-cell: #963173;
+  --light-cell: #f5e9be;
+  --white-piece: #a9d8d1;
+  --black-piece: #ffa64d;
+  --king-on-white: #ffffff;
+  --king-on-black: #ffffff;
+  --capture-dot: #43132f;
+  --selected-ring: rgba(150, 49, 115, 0.8);
+  --piece-shadow: 10px 12px 6px rgba(67, 19, 47, 0.42);
+  --white-piece-shadow: 10px 12px 6px rgba(0, 0, 0, 0.34);
+  --board-shadow: 8px 8px 11px rgba(202, 162, 100, 0.46);
 }
 
 body[data-theme="sky"] {
@@ -325,6 +327,10 @@ body[data-screen="game"] .sound-toggle {
   right: 220px;
 }
 
+body:not([data-theme="super"])[data-screen="game"] .sound-toggle {
+  right: 300px;
+}
+
 .music-toggle {
   right: 86px;
   display: none;
@@ -345,6 +351,10 @@ body[data-theme="super"][data-screen="game"] .music-toggle {
 
 body[data-screen="game"] .theme-toggle {
   right: 166px;
+}
+
+body:not([data-theme="super"])[data-screen="game"] .theme-toggle {
+  right: 244px;
 }
 
 body[data-theme="super"] .theme-toggle {
@@ -510,6 +520,20 @@ body[data-screen="game"] .side-panel > div:first-child {
   z-index: 2;
   width: min(270px, 100%);
   padding-top: 50px;
+}
+
+@media (min-width: 1001px) {
+  body:not([data-theme="super"])[data-screen="lobby"] .side-panel {
+    transform: translateY(52px);
+  }
+
+  body:not([data-theme="super"])[data-screen="lobby"] .board-shell {
+    transform: translate(42px, 14px);
+  }
+
+  body:not([data-theme="super"])[data-screen="lobby"] .board {
+    width: min(100%, 820px, calc(100vw - 29px), calc(100vh - 58px));
+  }
 }
 
 .eyebrow {
@@ -768,7 +792,7 @@ body[data-screen="game"] .status {
 }
 
 .style-swatch[data-theme="sand"] {
-  color: #c8bbad;
+  color: #f85c45;
 }
 
 .style-swatch[data-theme="sky"] {
@@ -1739,6 +1763,11 @@ body[data-screen="game"] .self-stack {
   justify-self: start;
 }
 
+body:not([data-theme="super"])[data-screen="game"] .self-stack,
+body:not([data-theme="super"])[data-screen="game"] .opponent-stack {
+  margin-top: 24px;
+}
+
 body[data-screen="game"] .self-stack .match-card,
 body[data-screen="game"] .opponent-stack .match-card {
   grid-row: 1;
@@ -1897,6 +1926,23 @@ body[data-screen="game"] .board-shell {
   justify-self: center;
 }
 
+body:not([data-theme="super"])[data-screen="game"] .board-shell {
+  margin-top: -32px;
+}
+
+body:not([data-theme="super"])[data-screen="game"] .reaction-actions {
+  margin-top: -16px;
+}
+
+body:not([data-theme="super"])[data-screen="game"] .game-actions {
+  gap: 22px 14px;
+  margin-top: 18px;
+}
+
+body:not([data-theme="super"])[data-screen="game"] .game-actions > button {
+  margin-top: 12px;
+}
+
 .reaction-bubble {
   position: absolute;
   left: 50%;
@@ -2038,6 +2084,50 @@ body[data-screen="game"] .board {
   width: min(100%, 690px, calc(100vh - 178px));
 }
 
+body[data-theme="sand"] .board {
+  border-color: #f5e9be;
+  background: #f5e9be;
+}
+
+.board.is-shaking {
+  animation: board-shake 420ms steps(2, end) both;
+}
+
+@keyframes board-shake {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+
+  12% {
+    transform: translate3d(-5px, 2px, 0) rotate(-0.65deg);
+  }
+
+  24% {
+    transform: translate3d(4px, -3px, 0) rotate(0.52deg);
+  }
+
+  36% {
+    transform: translate3d(-3px, -4px, 0) rotate(0.35deg);
+  }
+
+  48% {
+    transform: translate3d(5px, 2px, 0) rotate(-0.55deg);
+  }
+
+  60% {
+    transform: translate3d(-4px, 3px, 0) rotate(0.62deg);
+  }
+
+  74% {
+    transform: translate3d(3px, -4px, 0) rotate(-0.42deg);
+  }
+
+  88% {
+    transform: translate3d(-2px, 1px, 0) rotate(0.22deg);
+  }
+}
+
 .cell {
   position: relative;
   display: grid;
@@ -2094,8 +2184,30 @@ body:not([data-theme="super"]) .cell.dark:hover {
   background: var(--dark-cell);
 }
 
+body[data-theme="sand"] .cell:nth-child(n + 9):nth-child(-n + 16).dark,
+body[data-theme="sand"] .cell:nth-child(n + 25):nth-child(-n + 32).dark,
+body[data-theme="sand"] .cell:nth-child(n + 41):nth-child(-n + 48).dark,
+body[data-theme="sand"] .cell:nth-child(n + 57):nth-child(-n + 64).dark {
+  background: #ff5748;
+}
+
 body:not([data-theme="super"]) .cell:hover {
   background: var(--light-cell);
+}
+
+body:not([data-theme="super"]) .cell:has(.piece):hover {
+  background: var(--light-cell);
+}
+
+body:not([data-theme="super"]) .cell.dark:has(.piece):hover {
+  background: var(--dark-cell);
+}
+
+body[data-theme="sand"] .cell:nth-child(n + 9):nth-child(-n + 16).dark:has(.piece):hover,
+body[data-theme="sand"] .cell:nth-child(n + 25):nth-child(-n + 32).dark:has(.piece):hover,
+body[data-theme="sand"] .cell:nth-child(n + 41):nth-child(-n + 48).dark:has(.piece):hover,
+body[data-theme="sand"] .cell:nth-child(n + 57):nth-child(-n + 64).dark:has(.piece):hover {
+  background: #ff5748;
 }
 
 body[data-theme="super"] .cell:hover,
@@ -2128,16 +2240,16 @@ body[data-theme="super"] .cell:nth-child(64) {
 }
 
 .cell.selected {
-  outline: 3px solid var(--selected-ring);
-  outline-offset: -3px;
+  box-shadow: inset 0 0 0 4px #00d4ee;
+  outline: 0;
 }
 
 .cell.selected.selected-black {
-  outline-color: #8c78e5;
+  box-shadow: inset 0 0 0 4px #00d4ee;
 }
 
 .cell.selected.selected-white {
-  outline-color: #a36859;
+  box-shadow: inset 0 0 0 4px #00d4ee;
 }
 
 .cell.waiting-piece {
@@ -2531,6 +2643,16 @@ body[data-theme="super"] .piece.black.king::after {
   body[data-screen="game"] .sound-toggle {
     top: 62px;
     right: 164px;
+  }
+
+  body:not([data-theme="super"])[data-screen="game"] .sound-toggle {
+    top: 18px;
+    right: 266px;
+  }
+
+  body:not([data-theme="super"])[data-screen="game"] .theme-toggle {
+    top: 18px;
+    right: 212px;
   }
 
   h1 {
