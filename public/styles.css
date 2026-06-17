@@ -66,27 +66,27 @@ body[data-theme="midnight"] {
 body[data-theme="sand"] {
   --dark-cell: #963173;
   --light-cell: #f5e9be;
-  --white-piece: #a9d8d1;
-  --black-piece: #ffa64d;
+  --white-piece: #ffa64d;
+  --black-piece: #a9d8d1;
   --king-on-white: #ffffff;
   --king-on-black: #ffffff;
   --capture-dot: #43132f;
   --selected-ring: rgba(150, 49, 115, 0.8);
   --piece-shadow: 10px 12px 6px rgba(67, 19, 47, 0.42);
   --white-piece-shadow: 10px 12px 6px rgba(0, 0, 0, 0.34);
-  --board-shadow: 8px 8px 11px rgba(202, 162, 100, 0.46);
+  --board-shadow: 0 22px 54px rgba(0, 0, 0, 0.12);
 }
 
 body[data-theme="sky"] {
-  --dark-cell: #94c5d8;
+  --dark-cell: #7dbddb;
   --light-cell: #f2eee8;
   --white-piece: #ffffff;
-  --black-piece: #3d85a3;
-  --king-on-white: #94c5d8;
-  --king-on-black: #9fcfe0;
-  --capture-dot: #3d85a3;
-  --selected-ring: rgba(62, 131, 159, 0.75);
-  --board-shadow: 0 22px 54px rgba(62, 131, 159, 0.14);
+  --black-piece: #0b6b95;
+  --king-on-white: #7dbddb;
+  --king-on-black: #7dbddb;
+  --capture-dot: #0b6b95;
+  --selected-ring: rgba(11, 107, 149, 0.78);
+  --board-shadow: 0 22px 54px rgba(11, 107, 149, 0.14);
 }
 
 body[data-theme="lime"] {
@@ -102,15 +102,15 @@ body[data-theme="lime"] {
 }
 
 body[data-theme="walnut"] {
-  --dark-cell: #9d8062;
-  --light-cell: #d2c0aa;
+  --dark-cell: #a4743d;
+  --light-cell: #edd1b2;
   --white-piece: #ffffff;
-  --black-piece: #302e2b;
-  --king-on-white: #9d8062;
-  --king-on-black: #9d8062;
-  --capture-dot: #d2c0aa;
-  --selected-ring: rgba(48, 46, 43, 0.78);
-  --board-shadow: 0 22px 54px rgba(48, 46, 43, 0.14);
+  --black-piece: #5c2a00;
+  --king-on-white: #a4743d;
+  --king-on-black: #a4743d;
+  --capture-dot: #edd1b2;
+  --selected-ring: rgba(92, 42, 0, 0.78);
+  --board-shadow: 0 22px 54px rgba(92, 42, 0, 0.14);
 }
 
 body[data-theme="super"] {
@@ -796,7 +796,7 @@ body[data-screen="game"] .status {
 }
 
 .style-swatch[data-theme="sky"] {
-  color: #94c5d8;
+  color: #7dbddb;
 }
 
 .style-swatch[data-theme="lime"] {
@@ -804,7 +804,7 @@ body[data-screen="game"] .status {
 }
 
 .style-swatch[data-theme="walnut"] {
-  color: #9d8062;
+  color: #a4743d;
 }
 
 .style-swatch[data-theme="super"] {
@@ -2085,7 +2085,8 @@ body[data-screen="game"] .board {
 }
 
 body[data-theme="sand"] .board {
-  border-color: #f5e9be;
+  border-width: 10px;
+  border-color: #963173;
   background: #f5e9be;
 }
 
