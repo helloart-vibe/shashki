@@ -1313,8 +1313,8 @@ function renderStatus() {
     applyTheme(localStorage.getItem(themeKey));
     document.body.dataset.screen = "lobby";
     syncReactionPlacement();
-    titleText.textContent = "Создайте комнату";
-    statusText.textContent = "или подключитесь по коду.";
+    titleText.textContent = "Создай комнату";
+    statusText.textContent = "или подключись по коду";
     playerColorEl.textContent = "не подключены";
     playerCountEl.textContent = "0/2";
     playerStrip.classList.remove("is-online", "is-waiting");
