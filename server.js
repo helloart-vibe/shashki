@@ -12,6 +12,7 @@ const PREVIEW_FONT = path.join(PUBLIC_DIR, "fonts", "Inter-Variable.ttf");
 const APP_VERSION = "2026-05-21-sync-debug";
 const INSTANCE_ID = crypto.randomBytes(4).toString("hex");
 const rooms = new Map();
+const previewImages = new Map();
 const THEMES = new Set(["sky", "walnut", "midnight", "lime", "sand", "super"]);
 const PREVIEW_BY_THEME = {
   midnight: "1.jpg",
@@ -133,7 +134,7 @@ function createRoom(name, theme) {
   };
 
   rooms.set(code, room);
-  generateRoomPreview(room).catch(() => {});
+  generateRoomPreview(room.theme, room.creatorName).catch(() => {});
   return { room, player: { color, token } };
 }
 
@@ -262,19 +263,20 @@ function socialPreviewMeta(req) {
     ? `${creatorName} бросает тебе вызов – готов сразиться?`
     : "Создай комнату или подключись по коду";
   const imageUrl = room
-    ? `${url.origin}/previews/room/${encodeURIComponent(code)}.png`
+    ? `${url.origin}/api/room-preview?theme=${encodeURIComponent(theme)}&name=${encodeURIComponent(creatorName)}`
     : `${url.origin}/previews/${PREVIEW_BY_THEME[theme]}`;
   const pageUrl = room ? `${url.origin}/?room=${encodeURIComponent(code)}` : `${url.origin}/`;
 
   const tags = [
+    ["name", "description", description],
+    ["name", "application-name", "GOSHASHKI"],
+    ["name", "robots", "index, follow"],
     ["property", "og:type", "website"],
     ["property", "og:site_name", "GOSHASHKI"],
     ["property", "og:title", title],
     ["property", "og:description", description],
     ["property", "og:url", pageUrl],
     ["property", "og:image", imageUrl],
-    ["property", "og:image:secure_url", imageUrl],
-    ["property", "og:image:type", room ? "image/png" : "image/jpeg"],
     ["property", "og:image:width", "1200"],
     ["property", "og:image:height", "630"],
     ["property", "og:image:alt", "Приглашение сыграть в русские шашки"],
@@ -290,8 +292,7 @@ function socialPreviewMeta(req) {
     .join("\n");
 }
 
-function previewTextLayers(room) {
-  const creatorName = room.creatorName || Object.values(room.playerNames || {}).find(Boolean) || "Игрок";
+function previewTextLayers(creatorName) {
   const descriptionSize = Math.round(
     Math.max(23, Math.min(31, 35 - Math.max(0, creatorName.length - 8) * 0.55))
   );
@@ -337,39 +338,41 @@ function previewTextLayers(room) {
   ];
 }
 
-function generateRoomPreview(room) {
-  if (room.previewImage) return Promise.resolve(room.previewImage);
-  if (room.previewImagePromise) return room.previewImagePromise;
+function generateRoomPreview(theme, name) {
+  const safeTheme = cleanTheme(theme);
+  const creatorName = cleanName(name) || "Игрок";
+  const cacheKey = `${safeTheme}:${creatorName}`;
+  const cached = previewImages.get(cacheKey);
+  if (cached) return Promise.resolve(cached);
 
-  const background = path.join(PUBLIC_DIR, "previews", PREVIEW_BY_THEME[cleanTheme(room.theme)]);
-  room.previewImagePromise = sharp(background)
-    .composite(previewTextLayers(room))
+  const background = path.join(PUBLIC_DIR, "previews", PREVIEW_BY_THEME[safeTheme]);
+  const previewPromise = sharp(background)
+    .composite(previewTextLayers(creatorName))
     .png({ compressionLevel: 9 })
     .toBuffer()
     .then((image) => {
-      room.previewImage = image;
+      previewImages.set(cacheKey, image);
       return image;
     })
-    .finally(() => {
-      room.previewImagePromise = null;
+    .catch((error) => {
+      previewImages.delete(cacheKey);
+      throw error;
     });
 
-  return room.previewImagePromise;
+  previewImages.set(cacheKey, previewPromise);
+  return previewPromise;
 }
 
-async function serveRoomPreview(req, res, code) {
-  const room = rooms.get(code.toUpperCase());
-  if (!room) {
-    notFound(res);
-    return;
-  }
-
+async function serveRoomPreview(req, res, url) {
+  const theme = cleanTheme(url.searchParams.get("theme"));
+  const name = cleanName(url.searchParams.get("name")) || "Игрок";
   try {
-    const image = await generateRoomPreview(room);
+    const image = await generateRoomPreview(theme, name);
     res.writeHead(200, {
       "content-type": "image/png",
       "content-length": image.length,
-      "cache-control": "public, max-age=604800, immutable",
+      "cache-control": "public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800",
+      "cdn-cache-control": "public, s-maxage=86400, stale-while-revalidate=604800",
     });
     res.end(req.method === "HEAD" ? undefined : image);
   } catch (error) {
@@ -389,7 +392,7 @@ function serveIndex(req, res) {
     res.writeHead(200, {
       "content-type": mimeTypes[".html"],
       "content-length": pageBuffer.length,
-      "cache-control": "public, max-age=60, stale-while-revalidate=300",
+      "cache-control": "private, no-cache, no-store, max-age=0, must-revalidate",
     });
     res.end(req.method === "HEAD" ? undefined : pageBuffer);
   });
@@ -802,10 +805,9 @@ async function handleApi(req, res) {
 }
 
 const server = http.createServer((req, res) => {
-  const pathname = new URL(req.url, `http://${req.headers.host}`).pathname;
-  const roomPreviewMatch = pathname.match(/^\/previews\/room\/([a-z0-9]{6})\.png$/i);
-  if ((req.method === "GET" || req.method === "HEAD") && roomPreviewMatch) {
-    serveRoomPreview(req, res, roomPreviewMatch[1]);
+  const requestUrl = new URL(req.url, `http://${req.headers.host}`);
+  if ((req.method === "GET" || req.method === "HEAD") && requestUrl.pathname === "/api/room-preview") {
+    serveRoomPreview(req, res, requestUrl);
     return;
   }
 
