@@ -292,11 +292,13 @@ function serveIndex(req, res) {
     }
 
     const page = content.replace("  </head>", `${socialPreviewMeta(req)}\n  </head>`);
+    const pageBuffer = Buffer.from(page);
     res.writeHead(200, {
       "content-type": mimeTypes[".html"],
-      "cache-control": "no-store",
+      "content-length": pageBuffer.length,
+      "cache-control": "public, max-age=60, stale-while-revalidate=300",
     });
-    res.end(page);
+    res.end(req.method === "HEAD" ? undefined : pageBuffer);
   });
 }
 
@@ -325,11 +327,14 @@ function serveStatic(req, res) {
       return;
     }
 
+    const extension = path.extname(filePath).toLowerCase();
+    const isPreviewImage = extension === ".jpg" || extension === ".jpeg";
     res.writeHead(200, {
-      "content-type": mimeTypes[path.extname(filePath)] || "application/octet-stream",
-      "cache-control": "no-store",
+      "content-type": mimeTypes[extension] || "application/octet-stream",
+      "content-length": content.length,
+      "cache-control": isPreviewImage ? "public, max-age=604800, immutable" : "no-store",
     });
-    res.end(content);
+    res.end(req.method === "HEAD" ? undefined : content);
   });
 }
 
