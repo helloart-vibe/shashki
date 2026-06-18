@@ -262,8 +262,9 @@ function socialPreviewMeta(req) {
   const description = room
     ? `${creatorName} бросает тебе вызов – готов сразиться?`
     : "Создай комнату или подключись по коду";
+  const sourceImageUrl = `${url.origin}/api/room-preview?theme=${encodeURIComponent(theme)}&name=${encodeURIComponent(creatorName)}`;
   const imageUrl = room
-    ? `${url.origin}/api/room-preview?theme=${encodeURIComponent(theme)}&name=${encodeURIComponent(creatorName)}`
+    ? `https://wsrv.nl/?url=${encodeURIComponent(sourceImageUrl)}&output=png`
     : `${url.origin}/previews/${PREVIEW_BY_THEME[theme]}`;
   const pageUrl = room ? `${url.origin}/?room=${encodeURIComponent(code)}` : `${url.origin}/`;
 
