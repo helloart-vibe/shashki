@@ -1768,6 +1768,13 @@ body:not([data-theme="super"])[data-screen="game"] .opponent-stack {
   margin-top: 24px;
 }
 
+@media (min-width: 1001px) {
+  body:not([data-theme="super"])[data-screen="game"] .self-stack,
+  body:not([data-theme="super"])[data-screen="game"] .opponent-stack {
+    margin-top: 44px;
+  }
+}
+
 body[data-screen="game"] .self-stack .match-card,
 body[data-screen="game"] .opponent-stack .match-card {
   grid-row: 1;
@@ -2251,6 +2258,12 @@ body[data-theme="super"] .cell:nth-child(64) {
 
 .cell.selected.selected-white {
   box-shadow: inset 0 0 0 4px #00d4ee;
+}
+
+body[data-theme="super"] .cell.selected {
+  box-shadow:
+    inset 0 0 0 3px var(--selected-ring),
+    0 0 18px rgba(255, 102, 247, 0.34);
 }
 
 .cell.waiting-piece {
