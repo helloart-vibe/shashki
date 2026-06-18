@@ -11,6 +11,14 @@ const APP_VERSION = "2026-05-21-sync-debug";
 const INSTANCE_ID = crypto.randomBytes(4).toString("hex");
 const rooms = new Map();
 const THEMES = new Set(["sky", "walnut", "midnight", "lime", "sand", "super"]);
+const PREVIEW_BY_THEME = {
+  midnight: "1.jpg",
+  sky: "2.jpg",
+  walnut: "3.jpg",
+  lime: "4.jpg",
+  sand: "5.jpg",
+  super: "super.jpg",
+};
 const REACTIONS = new Set([
   "блин",
   "ой",
@@ -32,6 +40,8 @@ const mimeTypes = {
   ".js": "application/javascript; charset=utf-8",
   ".json": "application/json; charset=utf-8",
   ".svg": "image/svg+xml",
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
 };
 
 function roomCode() {
@@ -114,6 +124,7 @@ function createRoom(name, theme) {
     shake: null,
     reaction: null,
     theme: cleanTheme(theme),
+    creatorName: name,
     waiters: new Set(),
     updatedAt: Date.now(),
   };
@@ -219,9 +230,84 @@ function readBody(req) {
   });
 }
 
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function requestOrigin(req) {
+  const forwardedProtocol = String(req.headers["x-forwarded-proto"] || "").split(",")[0].trim();
+  const forwardedHost = String(req.headers["x-forwarded-host"] || "").split(",")[0].trim();
+  const protocol = forwardedProtocol || (req.socket.encrypted ? "https" : "http");
+  const host = forwardedHost || req.headers.host || `localhost:${PORT}`;
+  return `${protocol}://${host}`;
+}
+
+function socialPreviewMeta(req) {
+  const url = new URL(req.url, requestOrigin(req));
+  const code = String(url.searchParams.get("room") || "").trim().toUpperCase();
+  const room = rooms.get(code);
+  const theme = cleanTheme(room?.theme);
+  const creatorName = room?.creatorName || Object.values(room?.playerNames || {}).find(Boolean) || "Игрок";
+  const title = "Go shashki?";
+  const description = room
+    ? `${creatorName} бросает тебе вызов – готов сразиться?`
+    : "Создай комнату или подключись по коду";
+  const imageUrl = `${url.origin}/previews/${PREVIEW_BY_THEME[theme]}`;
+  const pageUrl = room ? `${url.origin}/?room=${encodeURIComponent(code)}` : `${url.origin}/`;
+
+  const tags = [
+    ["property", "og:type", "website"],
+    ["property", "og:site_name", "GOSHASHKI"],
+    ["property", "og:title", title],
+    ["property", "og:description", description],
+    ["property", "og:url", pageUrl],
+    ["property", "og:image", imageUrl],
+    ["property", "og:image:secure_url", imageUrl],
+    ["property", "og:image:type", "image/jpeg"],
+    ["property", "og:image:width", "1200"],
+    ["property", "og:image:height", "630"],
+    ["property", "og:image:alt", "Приглашение сыграть в русские шашки"],
+    ["name", "twitter:card", "summary_large_image"],
+    ["name", "twitter:title", title],
+    ["name", "twitter:description", description],
+    ["name", "twitter:image", imageUrl],
+  ];
+
+  return tags
+    .map(([attribute, name, content]) =>
+      `    <meta ${attribute}="${escapeHtml(name)}" content="${escapeHtml(content)}" />`)
+    .join("\n");
+}
+
+function serveIndex(req, res) {
+  fs.readFile(path.join(PUBLIC_DIR, "index.html"), "utf8", (error, content) => {
+    if (error) {
+      notFound(res);
+      return;
+    }
+
+    const page = content.replace("  </head>", `${socialPreviewMeta(req)}\n  </head>`);
+    res.writeHead(200, {
+      "content-type": mimeTypes[".html"],
+      "cache-control": "no-store",
+    });
+    res.end(page);
+  });
+}
+
 function serveStatic(req, res) {
   const rawPath = new URL(req.url, `http://${req.headers.host}`).pathname;
-  const safePath = rawPath === "/" ? "/index.html" : rawPath;
+  if (rawPath === "/" || rawPath === "/index.html") {
+    serveIndex(req, res);
+    return;
+  }
+
+  const safePath = rawPath;
   const filePath = path.normalize(path.join(PUBLIC_DIR, safePath));
 
   if (!filePath.startsWith(PUBLIC_DIR)) {
@@ -232,13 +318,7 @@ function serveStatic(req, res) {
   fs.readFile(filePath, (error, content) => {
     if (error) {
       if (!path.extname(filePath)) {
-        fs.readFile(path.join(PUBLIC_DIR, "index.html"), (fallbackError, fallback) => {
-          if (fallbackError) notFound(res);
-          else {
-            res.writeHead(200, { "content-type": mimeTypes[".html"] });
-            res.end(fallback);
-          }
-        });
+        serveIndex(req, res);
         return;
       }
       notFound(res);
