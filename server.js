@@ -8,6 +8,7 @@ const { CheckersRules } = require("./public/rules.js");
 const PORT = Number(process.env.PORT || 3000);
 const HOST = process.env.HOST || "127.0.0.1";
 const PUBLIC_DIR = path.join(__dirname, "public");
+const PREVIEW_FONT = path.join(PUBLIC_DIR, "fonts", "Inter-Variable.ttf");
 const APP_VERSION = "2026-05-21-sync-debug";
 const INSTANCE_ID = crypto.randomBytes(4).toString("hex");
 const rooms = new Map();
@@ -287,23 +288,51 @@ function socialPreviewMeta(req) {
     .join("\n");
 }
 
-function previewTextSvg(room) {
+function previewTextLayers(room) {
   const creatorName = room.creatorName || Object.values(room.playerNames || {}).find(Boolean) || "Игрок";
-  const descriptionSize = Math.max(23, Math.min(31, 35 - Math.max(0, creatorName.length - 8) * 0.55));
+  const descriptionSize = Math.round(
+    Math.max(23, Math.min(31, 35 - Math.max(0, creatorName.length - 8) * 0.55))
+  );
   const safeName = escapeHtml(creatorName);
 
-  return Buffer.from(`
-    <svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
-      <style>
-        text { font-family: Arial, Helvetica, sans-serif; }
-      </style>
-      <text x="76" y="148" fill="#ffffff" font-size="86" font-weight="700">Go shashki?</text>
-      <text x="78" y="220" font-size="${descriptionSize}" font-weight="400">
-        <tspan fill="#858585">${safeName}</tspan><tspan dx="8" fill="#ffffff">бросает тебе вызов – готов сразиться?</tspan>
-      </text>
-      <text x="76" y="568" fill="#858585" font-size="24" font-weight="400">goshashki.ru</text>
-    </svg>
-  `);
+  return [
+    {
+      input: {
+        text: {
+          text: '<span foreground="#ffffff" weight="700">Go shashki?</span>',
+          font: "Inter 94",
+          fontfile: PREVIEW_FONT,
+          rgba: true,
+        },
+      },
+      left: 76,
+      top: 82,
+    },
+    {
+      input: {
+        text: {
+          text: `<span foreground="#858585">${safeName}</span><span foreground="#ffffff"> бросает тебе вызов – готов сразиться?</span>`,
+          font: `Inter ${descriptionSize}`,
+          fontfile: PREVIEW_FONT,
+          rgba: true,
+        },
+      },
+      left: 78,
+      top: 194,
+    },
+    {
+      input: {
+        text: {
+          text: '<span foreground="#858585">goshashki.ru</span>',
+          font: "Inter 24",
+          fontfile: PREVIEW_FONT,
+          rgba: true,
+        },
+      },
+      left: 76,
+      top: 548,
+    },
+  ];
 }
 
 function generateRoomPreview(room) {
@@ -312,7 +341,7 @@ function generateRoomPreview(room) {
 
   const background = path.join(PUBLIC_DIR, "previews", PREVIEW_BY_THEME[cleanTheme(room.theme)]);
   room.previewImagePromise = sharp(background)
-    .composite([{ input: previewTextSvg(room), top: 0, left: 0 }])
+    .composite(previewTextLayers(room))
     .jpeg({ quality: 92, chromaSubsampling: "4:4:4" })
     .toBuffer()
     .then((image) => {
