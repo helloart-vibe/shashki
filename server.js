@@ -2,6 +2,7 @@ const http = require("http");
 const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
+const sharp = require("sharp");
 const { CheckersRules } = require("./public/rules.js");
 
 const PORT = Number(process.env.PORT || 3000);
@@ -257,7 +258,9 @@ function socialPreviewMeta(req) {
   const description = room
     ? `${creatorName} бросает тебе вызов – готов сразиться?`
     : "Создай комнату или подключись по коду";
-  const imageUrl = `${url.origin}/previews/${PREVIEW_BY_THEME[theme]}`;
+  const imageUrl = room
+    ? `${url.origin}/previews/room/${encodeURIComponent(code)}.jpg`
+    : `${url.origin}/previews/${PREVIEW_BY_THEME[theme]}`;
   const pageUrl = room ? `${url.origin}/?room=${encodeURIComponent(code)}` : `${url.origin}/`;
 
   const tags = [
@@ -282,6 +285,65 @@ function socialPreviewMeta(req) {
     .map(([attribute, name, content]) =>
       `    <meta ${attribute}="${escapeHtml(name)}" content="${escapeHtml(content)}" />`)
     .join("\n");
+}
+
+function previewTextSvg(room) {
+  const creatorName = room.creatorName || Object.values(room.playerNames || {}).find(Boolean) || "Игрок";
+  const descriptionSize = Math.max(23, Math.min(31, 35 - Math.max(0, creatorName.length - 8) * 0.55));
+  const safeName = escapeHtml(creatorName);
+
+  return Buffer.from(`
+    <svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
+      <style>
+        text { font-family: Arial, Helvetica, sans-serif; }
+      </style>
+      <text x="76" y="148" fill="#ffffff" font-size="86" font-weight="700">Go shashki?</text>
+      <text x="78" y="220" font-size="${descriptionSize}" font-weight="400">
+        <tspan fill="#858585">${safeName}</tspan><tspan dx="8" fill="#ffffff">бросает тебе вызов – готов сразиться?</tspan>
+      </text>
+      <text x="76" y="568" fill="#858585" font-size="24" font-weight="400">goshashki.ru</text>
+    </svg>
+  `);
+}
+
+function generateRoomPreview(room) {
+  if (room.previewImage) return Promise.resolve(room.previewImage);
+  if (room.previewImagePromise) return room.previewImagePromise;
+
+  const background = path.join(PUBLIC_DIR, "previews", PREVIEW_BY_THEME[cleanTheme(room.theme)]);
+  room.previewImagePromise = sharp(background)
+    .composite([{ input: previewTextSvg(room), top: 0, left: 0 }])
+    .jpeg({ quality: 92, chromaSubsampling: "4:4:4" })
+    .toBuffer()
+    .then((image) => {
+      room.previewImage = image;
+      return image;
+    })
+    .finally(() => {
+      room.previewImagePromise = null;
+    });
+
+  return room.previewImagePromise;
+}
+
+async function serveRoomPreview(req, res, code) {
+  const room = rooms.get(code.toUpperCase());
+  if (!room) {
+    notFound(res);
+    return;
+  }
+
+  try {
+    const image = await generateRoomPreview(room);
+    res.writeHead(200, {
+      "content-type": "image/jpeg",
+      "content-length": image.length,
+      "cache-control": "public, max-age=604800, immutable",
+    });
+    res.end(req.method === "HEAD" ? undefined : image);
+  } catch (error) {
+    json(res, 500, { error: error.message || "Preview generation failed" });
+  }
 }
 
 function serveIndex(req, res) {
@@ -709,6 +771,13 @@ async function handleApi(req, res) {
 }
 
 const server = http.createServer((req, res) => {
+  const pathname = new URL(req.url, `http://${req.headers.host}`).pathname;
+  const roomPreviewMatch = pathname.match(/^\/previews\/room\/([a-z0-9]{6})\.jpg$/i);
+  if ((req.method === "GET" || req.method === "HEAD") && roomPreviewMatch) {
+    serveRoomPreview(req, res, roomPreviewMatch[1]);
+    return;
+  }
+
   if (req.url.startsWith("/api/")) {
     handleApi(req, res);
     return;
