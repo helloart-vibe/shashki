@@ -44,6 +44,7 @@ const mimeTypes = {
   ".svg": "image/svg+xml",
   ".jpg": "image/jpeg",
   ".jpeg": "image/jpeg",
+  ".png": "image/png",
 };
 
 function roomCode() {
@@ -132,6 +133,7 @@ function createRoom(name, theme) {
   };
 
   rooms.set(code, room);
+  generateRoomPreview(room).catch(() => {});
   return { room, player: { color, token } };
 }
 
@@ -260,7 +262,7 @@ function socialPreviewMeta(req) {
     ? `${creatorName} бросает тебе вызов – готов сразиться?`
     : "Создай комнату или подключись по коду";
   const imageUrl = room
-    ? `${url.origin}/previews/room/${encodeURIComponent(code)}.jpg`
+    ? `${url.origin}/previews/room/${encodeURIComponent(code)}.png`
     : `${url.origin}/previews/${PREVIEW_BY_THEME[theme]}`;
   const pageUrl = room ? `${url.origin}/?room=${encodeURIComponent(code)}` : `${url.origin}/`;
 
@@ -272,7 +274,7 @@ function socialPreviewMeta(req) {
     ["property", "og:url", pageUrl],
     ["property", "og:image", imageUrl],
     ["property", "og:image:secure_url", imageUrl],
-    ["property", "og:image:type", "image/jpeg"],
+    ["property", "og:image:type", room ? "image/png" : "image/jpeg"],
     ["property", "og:image:width", "1200"],
     ["property", "og:image:height", "630"],
     ["property", "og:image:alt", "Приглашение сыграть в русские шашки"],
@@ -342,7 +344,7 @@ function generateRoomPreview(room) {
   const background = path.join(PUBLIC_DIR, "previews", PREVIEW_BY_THEME[cleanTheme(room.theme)]);
   room.previewImagePromise = sharp(background)
     .composite(previewTextLayers(room))
-    .jpeg({ quality: 92, chromaSubsampling: "4:4:4" })
+    .png({ compressionLevel: 9 })
     .toBuffer()
     .then((image) => {
       room.previewImage = image;
@@ -365,7 +367,7 @@ async function serveRoomPreview(req, res, code) {
   try {
     const image = await generateRoomPreview(room);
     res.writeHead(200, {
-      "content-type": "image/jpeg",
+      "content-type": "image/png",
       "content-length": image.length,
       "cache-control": "public, max-age=604800, immutable",
     });
@@ -801,7 +803,7 @@ async function handleApi(req, res) {
 
 const server = http.createServer((req, res) => {
   const pathname = new URL(req.url, `http://${req.headers.host}`).pathname;
-  const roomPreviewMatch = pathname.match(/^\/previews\/room\/([a-z0-9]{6})\.jpg$/i);
+  const roomPreviewMatch = pathname.match(/^\/previews\/room\/([a-z0-9]{6})\.png$/i);
   if ((req.method === "GET" || req.method === "HEAD") && roomPreviewMatch) {
     serveRoomPreview(req, res, roomPreviewMatch[1]);
     return;
