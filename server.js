@@ -262,10 +262,10 @@ function socialPreviewMeta(req) {
   const description = room
     ? `${creatorName} бросает тебе вызов – готов сразиться?`
     : "Создай комнату или подключись по коду";
-  const sourceImageUrl = `${url.origin}/api/room-preview?theme=${encodeURIComponent(theme)}&name=${encodeURIComponent(creatorName)}`;
   const imageUrl = room
-    ? `https://wsrv.nl/?url=${encodeURIComponent(sourceImageUrl)}&output=png`
+    ? `${url.origin}/social-preview/${encodeURIComponent(theme)}/${encodeURIComponent(creatorName)}.png`
     : `${url.origin}/previews/${PREVIEW_BY_THEME[theme]}`;
+  const imageType = room ? "image/png" : "image/jpeg";
   const pageUrl = room ? `${url.origin}/?room=${encodeURIComponent(code)}` : `${url.origin}/`;
 
   const tags = [
@@ -278,6 +278,9 @@ function socialPreviewMeta(req) {
     ["property", "og:description", description],
     ["property", "og:url", pageUrl],
     ["property", "og:image", imageUrl],
+    ["property", "og:image:url", imageUrl],
+    ["property", "og:image:secure_url", imageUrl],
+    ["property", "og:image:type", imageType],
     ["property", "og:image:width", "1200"],
     ["property", "og:image:height", "630"],
     ["property", "og:image:alt", "Приглашение сыграть в русские шашки"],
@@ -285,6 +288,7 @@ function socialPreviewMeta(req) {
     ["name", "twitter:title", title],
     ["name", "twitter:description", description],
     ["name", "twitter:image", imageUrl],
+    ["name", "twitter:image:alt", "Приглашение сыграть в русские шашки"],
   ];
 
   return tags
@@ -367,13 +371,19 @@ function generateRoomPreview(theme, name) {
 async function serveRoomPreview(req, res, url) {
   const theme = cleanTheme(url.searchParams.get("theme"));
   const name = cleanName(url.searchParams.get("name")) || "Игрок";
+  return serveGeneratedPreview(req, res, theme, name);
+}
+
+async function serveGeneratedPreview(req, res, theme, name) {
   try {
     const image = await generateRoomPreview(theme, name);
     res.writeHead(200, {
       "content-type": "image/png",
       "content-length": image.length,
+      "content-disposition": 'inline; filename="goshashki-preview.png"',
       "cache-control": "public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800",
       "cdn-cache-control": "public, s-maxage=86400, stale-while-revalidate=604800",
+      "x-content-type-options": "nosniff",
     });
     res.end(req.method === "HEAD" ? undefined : image);
   } catch (error) {
@@ -807,6 +817,18 @@ async function handleApi(req, res) {
 
 const server = http.createServer((req, res) => {
   const requestUrl = new URL(req.url, `http://${req.headers.host}`);
+  const socialPreviewMatch = requestUrl.pathname.match(/^\/social-preview\/([^/]+)\/(.+)\.png$/);
+  if ((req.method === "GET" || req.method === "HEAD") && socialPreviewMatch) {
+    let previewName = "Игрок";
+    try {
+      previewName = decodeURIComponent(socialPreviewMatch[2]);
+    } catch (_error) {
+      // Use the safe fallback for malformed preview paths.
+    }
+    serveGeneratedPreview(req, res, socialPreviewMatch[1], previewName);
+    return;
+  }
+
   if ((req.method === "GET" || req.method === "HEAD") && requestUrl.pathname === "/api/room-preview") {
     serveRoomPreview(req, res, requestUrl);
     return;
