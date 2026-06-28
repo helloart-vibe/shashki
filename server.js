@@ -190,6 +190,7 @@ function noticeId() {
 
 function startRematch(room) {
   const currentPlayers = ["white", "black"].map((color) => ({
+    color,
     token: room.players[color],
     name: room.playerNames[color],
     score: room.score[color] || 0,
@@ -197,9 +198,9 @@ function startRematch(room) {
 
   if (currentPlayers.some((item) => !item.token)) return false;
 
-  const firstIsWhite = crypto.randomInt(2) === 0;
-  const whitePlayer = firstIsWhite ? currentPlayers[0] : currentPlayers[1];
-  const blackPlayer = firstIsWhite ? currentPlayers[1] : currentPlayers[0];
+  const winner = currentPlayers.find((item) => item.color === room.game.winner);
+  const whitePlayer = winner || currentPlayers[crypto.randomInt(2)];
+  const blackPlayer = currentPlayers.find((item) => item.token !== whitePlayer.token);
 
   room.players = {
     white: whitePlayer.token,
