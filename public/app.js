@@ -15,10 +15,12 @@ const createRoomButton = document.querySelector("#createRoomButton");
 const surrenderButton = document.querySelector("#surrenderButton");
 const leaveRoomButton = document.querySelector("#leaveRoomButton");
 const drawButton = document.querySelector("#drawButton");
+const undoButton = document.querySelector("#undoButton");
 const shakeButton = document.querySelector("#shakeButton");
 const rematchButton = document.querySelector("#rematchButton");
 const reactionActions = document.querySelector("#reactionActions");
 const reactionButtons = [...document.querySelectorAll(".reaction-button")];
+const emojiReactions = document.querySelector(".emoji-reactions");
 const reactionBubble = document.querySelector("#reactionBubble");
 const joinForm = document.querySelector("#joinForm");
 const nameInput = document.querySelector("#nameInput");
@@ -63,6 +65,7 @@ const musicKey = "russian-checkers:music";
 const themes = new Set(["sky", "walnut", "midnight", "lime", "sand", "super"]);
 const uiThemes = new Set(["light", "dark"]);
 const soundStates = new Set(["on", "off"]);
+const undoWindowDuration = 1500;
 const moveSound = new Audio("/move.mp3");
 const superMoveSound = new Audio("/super-move.wav");
 const captureSound = new Audio("/capture.mp3");
@@ -112,6 +115,9 @@ let lastMoveSoundKey = "";
 let lastWinSoundKey = "";
 let lastMoveSoundAt = 0;
 let moveRequestPending = false;
+let undoRequestPending = false;
+let undoWindow = null;
+let undoWindowTimer = null;
 let lastShakeId = "";
 let lastReactionId = "";
 let reactionTimer = null;
@@ -138,7 +144,10 @@ function normalizeTheme(theme) {
 function applyTheme(theme) {
   const nextTheme = normalizeTheme(theme);
   document.body.dataset.theme = nextTheme;
-  if (nextTheme === "super") cachedRippleImage("/super-board.svg");
+  if (nextTheme === "super") {
+    cachedRippleImage("/super-board.svg");
+    cachedRippleImage("/super-board-white-bottom.svg");
+  }
 
   for (const button of styleButtons) {
     button.classList.toggle("is-selected", button.dataset.theme === nextTheme);
@@ -627,6 +636,11 @@ function placeReactionBubble(reaction) {
   const targetStack = isOwnReaction ? selfStack : opponentStack;
   if (!targetStack) return;
 
+  if (isOwnReaction && reactionActions) {
+    reactionActions.appendChild(reactionBubble);
+    return;
+  }
+
   targetStack.appendChild(reactionBubble);
 }
 
@@ -638,14 +652,21 @@ function showReaction(reaction) {
   placeReactionBubble(reaction);
   reactionBubble.hidden = false;
   reactionBubble.textContent = reaction.text;
-  reactionBubble.classList.remove("from-self", "from-opponent", "is-showing");
+  reactionBubble.classList.remove("from-self", "from-opponent", "is-emoji", "is-showing");
   reactionBubble.classList.add(reaction.from === player.color ? "from-self" : "from-opponent");
+  if ([...reaction.text].some((symbol) => /\p{Extended_Pictographic}/u.test(symbol))) {
+    reactionBubble.classList.add("is-emoji");
+  }
   void reactionBubble.offsetWidth;
   reactionBubble.classList.add("is-showing");
   reactionTimer = setTimeout(() => {
     reactionBubble.hidden = true;
     reactionBubble.classList.remove("is-showing");
   }, 2200);
+}
+
+function collapseEmojiReactions() {
+  emojiReactions?.classList.add("is-collapsed");
 }
 
 function maybeShowReaction(nextRoom) {
@@ -1051,6 +1072,46 @@ function isMyTurn() {
   );
 }
 
+function clearUndoWindow() {
+  undoWindow = null;
+  clearTimeout(undoWindowTimer);
+  undoWindowTimer = null;
+  syncUndoButton();
+}
+
+function canUndoMove() {
+  return Boolean(
+    undoWindow &&
+      room &&
+      room.code === undoWindow.roomCode &&
+      Date.now() < undoWindow.expiresAt &&
+      !undoRequestPending
+  );
+}
+
+function syncUndoButton() {
+  if (!undoButton) return;
+  const canShow =
+    room &&
+    player.color !== "spectator" &&
+    room.game.status === "playing" &&
+    (isRoomReady() || room.theme === "super");
+  undoButton.hidden = !canShow;
+  undoButton.disabled = !canUndoMove();
+  undoButton.classList.toggle("is-undo-ready", canUndoMove());
+}
+
+function openUndoWindow(nextRoom) {
+  clearTimeout(undoWindowTimer);
+  undoWindow = {
+    roomCode: nextRoom.code,
+    version: nextRoom.version,
+    expiresAt: Date.now() + undoWindowDuration,
+  };
+  syncUndoButton();
+  undoWindowTimer = setTimeout(clearUndoWindow, undoWindowDuration);
+}
+
 function showToast(message) {
   toastMessageEl.textContent = message;
   toastEl.hidden = false;
@@ -1312,6 +1373,7 @@ function renderStatus() {
   if (!room) {
     applyTheme(localStorage.getItem(themeKey));
     document.body.dataset.screen = "lobby";
+    document.body.dataset.boardBottom = "white";
     syncReactionPlacement();
     titleText.textContent = "Создай комнату";
     statusText.textContent = "или подключись по коду";
@@ -1324,6 +1386,7 @@ function renderStatus() {
     reactionActions.hidden = true;
     leaveRoomButton.hidden = true;
     superRoomCodeButton.hidden = true;
+    clearUndoWindow();
     playerStrip.hidden = true;
     roomCard.hidden = true;
     scoreCard.hidden = true;
@@ -1350,6 +1413,7 @@ function renderStatus() {
 
   applyTheme(room.theme);
   document.body.dataset.screen = "game";
+  document.body.dataset.boardBottom = player.color === "black" ? "black" : "white";
   syncReactionPlacement();
   titleText.textContent = "Идёт игра";
   lobbyActions.hidden = true;
@@ -1366,6 +1430,7 @@ function renderStatus() {
     player.color !== "spectator" && room.game.status === "playing" && (isRoomReady() || room.theme === "super");
   surrenderButton.hidden = !canShowRoomControls;
   drawButton.hidden = !canShowRoomControls;
+  syncUndoButton();
   rematchButton.hidden = !(
     isRoomReady() &&
     player.color !== "spectator" &&
@@ -1643,6 +1708,7 @@ async function submitMove(move) {
     const nextRoom = payload.room;
     room = nextRoom;
     resetSelection();
+    openUndoWindow(nextRoom);
     const replayingCapture = startCaptureReplay(previousRoom, nextRoom);
     if (!replayingCapture) {
       queueMoveAnimation(previousRoom, nextRoom);
@@ -1651,6 +1717,32 @@ async function submitMove(move) {
     playRoomUpdateSound(previousRoom, nextRoom);
   } finally {
     moveRequestPending = false;
+  }
+}
+
+async function undoLastMove() {
+  if (!room || !canUndoMove() || undoRequestPending) return;
+  undoRequestPending = true;
+  syncUndoButton();
+
+  try {
+    const payload = await api(`/api/rooms/${room.code}/undo-move`, {
+      method: "POST",
+      body: JSON.stringify({
+        token: player.token,
+        color: player.color,
+        version: undoWindow.version,
+      }),
+    });
+    room = payload.room;
+    captureReplay = null;
+    boardMoveAnimation = null;
+    resetSelection();
+    clearUndoWindow();
+    render();
+  } finally {
+    undoRequestPending = false;
+    syncUndoButton();
   }
 }
 
@@ -1917,13 +2009,31 @@ drawButton.addEventListener("click", () => {
   offerDraw().catch(showError);
 });
 
+undoButton.addEventListener("click", () => {
+  undoLastMove().catch(showError);
+});
+
 shakeButton.addEventListener("click", sendBoardShake);
 
 for (const button of reactionButtons) {
-  button.addEventListener("click", () => {
-    sendReaction(button.dataset.reaction).catch(showError);
+  button.addEventListener("click", async () => {
+    const isEmojiReaction = button.classList.contains("emoji-reaction");
+    if (isEmojiReaction) {
+      collapseEmojiReactions();
+      button.blur();
+    }
+
+    try {
+      await sendReaction(button.dataset.reaction);
+    } catch (error) {
+      showError(error);
+    }
   });
 }
+
+emojiReactions?.addEventListener("mouseleave", () => {
+  emojiReactions.classList.remove("is-collapsed");
+});
 
 rematchButton.addEventListener("click", () => {
   offerRematch().catch(showError);

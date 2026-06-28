@@ -178,11 +178,21 @@ body {
 
 body[data-theme="super"] {
   overflow-x: hidden;
-  background: #000 url("./super-bg.jpg") center / cover fixed no-repeat;
+  background-color: #000;
+  background-image: url("./bg-shashki-corner.png"), url("./super-bg.jpg");
+  background-position: right bottom, center;
+  background-size: min(62vw, 720px) auto, cover;
+  background-attachment: fixed, fixed;
+  background-repeat: no-repeat, no-repeat;
 }
 
 body[data-theme="super"][data-screen="game"] {
-  background: #000000;
+  background-color: #000000;
+  background-image: url("./bg-shashki-corner.png");
+  background-position: right bottom;
+  background-size: min(62vw, 720px) auto;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
 }
 
 @supports not (zoom: 1) {
@@ -636,6 +646,79 @@ body[data-screen="game"] .status {
   background: var(--button-secondary-bg);
 }
 
+.emoji-reactions {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 38px;
+  height: 36px;
+  overflow: visible;
+}
+
+.emoji-tray {
+  position: absolute;
+  top: 0;
+  left: 34px;
+  z-index: 8;
+  display: grid;
+  grid-template-columns: repeat(6, 34px);
+  align-items: center;
+  gap: 0;
+  width: 204px;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-8px) scale(0.96);
+  transform-origin: left center;
+  transition:
+    opacity 160ms ease,
+    transform 180ms ease;
+}
+
+.emoji-reactions:hover .emoji-tray,
+.emoji-reactions:focus-within .emoji-tray {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(0) scale(1);
+}
+
+.emoji-reactions.is-collapsed .emoji-tray {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-8px) scale(0.96);
+}
+
+.emoji-reactions.is-collapsed:hover .emoji-tray,
+.emoji-reactions.is-collapsed:focus-within .emoji-tray {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-8px) scale(0.96);
+}
+
+.reaction-button.emoji-reaction {
+  width: 38px;
+  min-width: 38px;
+  border-color: transparent;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+  font-size: 20px;
+  opacity: 1;
+  transition:
+    opacity 140ms ease,
+    transform 140ms ease;
+}
+
+.reaction-button.emoji-reaction.is-visible-emoji {
+  border-color: var(--match-card-border);
+  background: var(--panel);
+}
+
+.reaction-button.emoji-reaction:hover {
+  background: transparent;
+  opacity: 1;
+  transform: translateY(-1px) scale(1.08);
+}
+
 .game-actions .icon-action {
   display: inline-flex;
   gap: 16px;
@@ -651,6 +734,10 @@ body[data-screen="game"] .status {
 }
 
 .game-actions .draw-action {
+  width: 142px;
+}
+
+.game-actions .undo-action {
   width: 142px;
 }
 
@@ -709,6 +796,17 @@ body[data-screen="game"] .status {
 .draw-action .action-icon {
   -webkit-mask: url("/handshake-light.svg") center / contain no-repeat;
   mask: url("/handshake-light.svg") center / contain no-repeat;
+}
+
+.undo-action .undo-icon {
+  width: 17px;
+  height: 17px;
+  -webkit-mask: url("/arrow.svg") center / contain no-repeat;
+  mask: url("/arrow.svg") center / contain no-repeat;
+}
+
+.undo-action:not(.is-undo-ready) {
+  opacity: 0.5;
 }
 
 .leave-action .action-icon {
@@ -1174,6 +1272,10 @@ body[data-theme="super"] .game-actions .draw-action {
   width: 50px;
 }
 
+body[data-theme="super"] .game-actions .undo-action:not(.is-undo-ready) {
+  opacity: 0.5;
+}
+
 body[data-theme="super"] .game-actions .shake-button {
   display: none;
 }
@@ -1634,13 +1736,13 @@ body[data-theme="super"][data-screen="game"] .captured-pieces {
 
 body[data-theme="super"][data-screen="game"] .reaction-actions {
   position: absolute !important;
-  top: 140px;
+  top: 160px;
   right: auto !important;
   bottom: auto !important;
   left: 0 !important;
   z-index: 6;
-  display: grid !important;
-  grid-template-columns: repeat(3, max-content);
+  display: flex !important;
+  flex-wrap: wrap;
   gap: 0;
   justify-content: start;
   width: auto;
@@ -1648,15 +1750,44 @@ body[data-theme="super"][data-screen="game"] .reaction-actions {
 }
 
 body[data-theme="super"][data-screen="game"] .reaction-button {
-  min-height: 34px;
-  border-color: rgba(255, 255, 255, 0.34);
-  border-radius: 22px;
-  padding: 0 18px;
-  color: rgba(255, 255, 255, 0.56);
-  background: transparent;
+  height: 36px;
+  min-height: 36px;
+  width: auto;
+  min-width: auto;
+  border-color: rgba(255, 255, 255, 0.42);
+  border-radius: 25px;
+  padding: 0 16px;
+  color: rgba(255, 255, 255, 0.66);
+  background: rgba(255, 255, 255, 0.035);
   box-shadow: none;
-  font-size: 13px;
-  opacity: 0.48;
+  font-size: 12px;
+  opacity: 0.56;
+}
+
+body[data-theme="super"][data-screen="game"] .reaction-button.emoji-reaction {
+  width: 36px;
+  min-width: 36px;
+  border-color: transparent;
+  padding: 0;
+  color: #ffffff;
+  background: transparent;
+  font-size: 20px;
+}
+
+body[data-theme="super"][data-screen="game"] .reaction-button.emoji-reaction.is-visible-emoji {
+  border-color: rgba(255, 255, 255, 0.42);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+body[data-theme="super"][data-screen="game"] .emoji-reactions {
+  width: 36px;
+  height: 36px;
+}
+
+body[data-theme="super"][data-screen="game"] .emoji-tray {
+  left: 32px;
+  grid-template-columns: repeat(6, 32px);
+  width: 192px;
 }
 
 body[data-theme="super"][data-screen="game"] .reaction-button:hover {
@@ -2020,6 +2151,18 @@ body[data-theme="super"][data-screen="game"] .opponent-stack .reaction-bubble {
   justify-self: end;
 }
 
+body[data-theme="super"][data-screen="game"] .opponent-stack .reaction-bubble.from-opponent {
+  font-size: 36px;
+}
+
+body[data-theme="super"][data-screen="game"] .opponent-stack .reaction-bubble.from-opponent.is-emoji {
+  font-size: 54px;
+  border-color: transparent;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
 body[data-theme="super"][data-screen="game"] .reaction-bubble.is-showing {
   animation: super-reaction-pop 2200ms cubic-bezier(0.2, 0.85, 0.2, 1) both;
 }
@@ -2080,11 +2223,15 @@ body[data-theme="super"] .board {
   border: 0;
   padding: 5.6%;
   background-color: transparent;
-  background-image: url("/super-board.svg");
+  background-image: url("/super-board-white-bottom.svg");
   background-position: center;
   background-size: 100% 100%;
   background-repeat: no-repeat;
   box-shadow: none;
+}
+
+body[data-theme="super"][data-board-bottom="black"] .board {
+  background-image: url("/super-board.svg");
 }
 
 body[data-screen="game"] .board {
@@ -2354,25 +2501,25 @@ body[data-theme="super"] .piece {
 }
 
 body[data-theme="super"] .piece.white {
-  background: var(--white-piece);
-  box-shadow: var(--white-piece-shadow);
+  background: url("/super-piece-white.png") center / contain no-repeat;
+  box-shadow: none;
 }
 
 body[data-theme="super"] .piece.black {
-  background: var(--black-piece);
-  box-shadow: var(--piece-shadow);
+  background: url("/super-piece-black.png") center / contain no-repeat;
+  box-shadow: none;
 }
 
 body[data-theme="super"] .piece.white.king {
-  background: var(--white-piece);
+  background: url("/super-piece-white-king.png") center / contain no-repeat;
 }
 
 body[data-theme="super"] .piece.black.king {
-  background: var(--black-piece);
+  background: url("/super-piece-black-king.png") center / contain no-repeat;
 }
 
 body[data-theme="super"] .piece.king::after {
-  display: block;
+  display: none;
   width: 46%;
   color: var(--king-on-white);
   opacity: 0.72;
@@ -2938,28 +3085,33 @@ body[data-theme="super"] .piece.black.king::after {
   }
 
   body[data-theme="super"][data-screen="game"] .reaction-actions {
-    position: static !important;
+    position: relative !important;
     top: auto !important;
     right: auto !important;
     bottom: auto !important;
     left: auto !important;
-    display: grid !important;
-    grid-template-columns: repeat(3, max-content);
+    display: flex !important;
+    flex-wrap: wrap;
     gap: 0;
     justify-content: center;
     width: 100%;
-    margin-top: 16px;
+    margin-top: 46px;
     order: 2;
     transform: none !important;
   }
 
   body[data-theme="super"][data-screen="game"] .reaction-bubble {
-    position: static;
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    order: 3;
     justify-self: start;
-    margin-top: 12px;
+    margin-top: 0;
   }
 
   body[data-theme="super"][data-screen="game"] .opponent-stack .reaction-bubble {
+    right: 0;
+    left: auto;
     justify-self: end;
   }
 

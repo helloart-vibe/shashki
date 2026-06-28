@@ -26,16 +26,35 @@ const REACTIONS = new Set([
   "блин",
   "ой",
   "упс...",
+  "ахах",
   "хорооош!",
   "круто!",
   "мощно",
   "ходи!",
   "не спи",
   "ты тут?",
-  "упс",
-  "ниииплооохоо!",
-  "хорооош",
+  "я тут",
+  "руби",
+  "сек",
+  "ща приду",
+  "😆",
+  "😅",
+  "😎",
+  "🔥",
+  "🤔",
+  "🤓",
+  "🤯",
+  "🤪",
+  "🤧",
+  "💩",
+  "👍",
+  "🖐",
+  "🫠",
+  "🥹",
+  "🥲",
+  "😇",
 ]);
+const UNDO_WINDOW_MS = 1500;
 
 const mimeTypes = {
   ".html": "text/html; charset=utf-8",
@@ -68,6 +87,10 @@ function cleanTheme(theme) {
 function cleanReaction(reaction) {
   const value = String(reaction || "").trim().replace(/\s+/g, " ");
   return REACTIONS.has(value) ? value : "";
+}
+
+function cloneGame(game) {
+  return JSON.parse(JSON.stringify(game));
 }
 
 function isRoomReady(room) {
@@ -127,6 +150,7 @@ function createRoom(name, theme) {
     resultNotice: null,
     shake: null,
     reaction: null,
+    lastUndo: null,
     theme: cleanTheme(theme),
     creatorName: name,
     waiters: new Set(),
@@ -194,6 +218,7 @@ function startRematch(room) {
   room.rematchOffer = null;
   room.resultNotice = null;
   room.reaction = null;
+  room.lastUndo = null;
   return true;
 }
 
@@ -770,8 +795,46 @@ async function handleApi(req, res) {
         return;
       }
 
+      room.lastUndo = {
+        color,
+        game: cloneGame(room.game),
+        version: room.version + 1,
+        expiresAt: Date.now() + UNDO_WINDOW_MS,
+      };
       room.game = result.game;
       if (room.game.status === "finished" && room.game.winner) awardWinner(room, room.game.winner);
+      touch(room);
+      json(res, 200, { room: publicRoom(room) });
+      return;
+    }
+
+    if (req.method === "POST" && parts.length === 4 && parts[3] === "undo-move") {
+      const body = await readBody(req);
+      const color = body.color;
+
+      if (!["white", "black"].includes(color) || room.players[color] !== body.token) {
+        json(res, 403, { error: "Нет прав отменить этот ход" });
+        return;
+      }
+
+      if (
+        !room.lastUndo ||
+        room.lastUndo.color !== color ||
+        room.lastUndo.version !== Number(body.version) ||
+        Date.now() > room.lastUndo.expiresAt
+      ) {
+        json(res, 409, { error: "Время отмены хода истекло" });
+        return;
+      }
+
+      if (room.game.status !== "playing") {
+        json(res, 409, { error: "Этот ход уже нельзя отменить" });
+        return;
+      }
+
+      room.game = cloneGame(room.lastUndo.game);
+      room.drawOffer = null;
+      room.lastUndo = null;
       touch(room);
       json(res, 200, { room: publicRoom(room) });
       return;
