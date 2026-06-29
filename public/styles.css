@@ -675,7 +675,8 @@ body[data-screen="game"] .status {
 }
 
 .emoji-reactions:hover .emoji-tray,
-.emoji-reactions:focus-within .emoji-tray {
+.emoji-reactions:focus-within .emoji-tray,
+.emoji-reactions.is-open .emoji-tray {
   opacity: 1;
   pointer-events: auto;
   transform: translateX(0) scale(1);
@@ -3100,6 +3101,32 @@ body[data-theme="super"] .piece.black.king::after {
     transform: none !important;
   }
 
+  body[data-theme="super"][data-screen="game"] .emoji-reactions {
+    width: 36px;
+  }
+
+  body[data-theme="super"][data-screen="game"] .emoji-tray {
+    top: 40px;
+    right: 0;
+    left: auto;
+    grid-template-columns: repeat(8, 32px);
+    width: min(256px, calc(100vw - 56px));
+    transform: translate(8px, -8px) scale(0.96);
+    transform-origin: top right;
+  }
+
+  body[data-theme="super"][data-screen="game"] .emoji-reactions:hover .emoji-tray,
+  body[data-theme="super"][data-screen="game"] .emoji-reactions:focus-within .emoji-tray,
+  body[data-theme="super"][data-screen="game"] .emoji-reactions.is-open .emoji-tray {
+    transform: translate(0, 0) scale(1);
+  }
+
+  body[data-theme="super"][data-screen="game"] .emoji-reactions.is-collapsed .emoji-tray,
+  body[data-theme="super"][data-screen="game"] .emoji-reactions.is-collapsed:hover .emoji-tray,
+  body[data-theme="super"][data-screen="game"] .emoji-reactions.is-collapsed:focus-within .emoji-tray {
+    transform: translate(8px, -8px) scale(0.96);
+  }
+
   body[data-theme="super"][data-screen="game"] .reaction-bubble {
     position: absolute;
     top: calc(100% + 8px);
@@ -3139,26 +3166,36 @@ body[data-theme="super"] .piece.black.king::after {
   body[data-screen="game"] .self-stack {
     grid-template-rows: none;
     align-self: auto;
+    position: relative;
     width: 100%;
   }
 
   body[data-screen="game"] .opponent-stack {
     grid-template-rows: none;
     align-self: auto;
+    position: relative;
   }
 
   body[data-screen="game"] .thinking-text,
   body[data-screen="game"] .opponent-thinking {
+    position: absolute;
+    top: 56px;
+    left: 50%;
+    z-index: 3;
     grid-row: auto;
     min-height: 0;
-    width: 100%;
+    width: calc(100% - 148px);
     margin: 0;
     font-size: 18px;
+    line-height: 1.2;
+    text-align: center;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
   }
 
   body[data-screen="game"] .self-stack .thinking-text,
   body[data-screen="game"] .opponent-thinking {
-    margin-top: 12px;
+    margin-top: 0;
   }
 
   body[data-screen="game"] .captured-pieces {
@@ -3247,6 +3284,36 @@ body[data-theme="super"] .piece.black.king::after {
 }
 
 @media (max-width: 460px) {
+  body[data-screen="game"] .emoji-reactions {
+    width: 100%;
+  }
+
+  body[data-screen="game"] .emoji-tray,
+  body[data-theme="super"][data-screen="game"] .emoji-tray {
+    top: 0;
+    left: 34px;
+    grid-template-columns: repeat(8, 32px);
+    width: min(256px, calc(100vw - 82px));
+  }
+
+  body[data-screen="game"] .reaction-button.emoji-reaction,
+  body[data-theme="super"][data-screen="game"] .reaction-button.emoji-reaction {
+    width: 32px;
+    min-width: 32px;
+  }
+
+  body[data-theme="super"][data-screen="game"] .emoji-reactions {
+    width: 32px;
+  }
+
+  body[data-theme="super"][data-screen="game"] .emoji-tray {
+    top: 38px;
+    right: 0;
+    left: auto;
+    grid-template-columns: repeat(8, 32px);
+    width: min(256px, calc(100vw - 56px));
+  }
+
   body:not([data-theme="super"])::before {
     position: fixed;
     inset: 0 0 auto;
@@ -3401,6 +3468,11 @@ body[data-theme="super"] .piece.black.king::after {
   body[data-theme="super"][data-screen="game"] .self-stack .match-card,
   body[data-theme="super"][data-screen="game"] .opponent-stack .match-card {
     width: min(378px, 100%);
+  }
+
+  body[data-theme="super"][data-screen="game"] .thinking-text,
+  body[data-theme="super"][data-screen="game"] .opponent-thinking {
+    top: 34px;
   }
 
   body[data-theme="super"][data-screen="game"] .score-card {
@@ -3721,14 +3793,17 @@ body[data-theme="super"] .piece.black.king::after {
     display: none !important;
   }
 
-  body:not([data-theme="super"])[data-screen="game"] .thinking-text {
+  body:not([data-theme="super"])[data-screen="game"] .thinking-text,
+  body:not([data-theme="super"])[data-screen="game"] .opponent-thinking {
     position: absolute;
-    top: 66px;
-    left: 12px;
-    width: auto;
+    top: 30px;
+    left: 50%;
+    width: calc(100% - 120px);
     margin: 0;
     font-size: 11px;
     line-height: 1;
+    text-align: center;
+    transform: translate(-50%, -50%);
   }
 
   body:not([data-theme="super"])[data-screen="game"] .leave-action {

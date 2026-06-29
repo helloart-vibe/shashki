@@ -138,7 +138,7 @@ let lastConnectedPlayers = null;
 const dismissedModalKeys = new Set();
 
 function normalizeTheme(theme) {
-  return themes.has(theme) ? theme : "midnight";
+  return themes.has(theme) ? theme : "super";
 }
 
 function applyTheme(theme) {
@@ -666,7 +666,17 @@ function showReaction(reaction) {
 }
 
 function collapseEmojiReactions() {
+  emojiReactions?.classList.remove("is-open");
   emojiReactions?.classList.add("is-collapsed");
+}
+
+function openEmojiReactions() {
+  emojiReactions?.classList.remove("is-collapsed");
+  emojiReactions?.classList.add("is-open");
+}
+
+function isTouchEmojiMode() {
+  return window.matchMedia?.("(hover: none), (pointer: coarse)").matches;
 }
 
 function maybeShowReaction(nextRoom) {
@@ -2016,8 +2026,18 @@ undoButton.addEventListener("click", () => {
 shakeButton.addEventListener("click", sendBoardShake);
 
 for (const button of reactionButtons) {
-  button.addEventListener("click", async () => {
+  button.addEventListener("click", async (event) => {
     const isEmojiReaction = button.classList.contains("emoji-reaction");
+    const isVisibleEmoji = button.classList.contains("is-visible-emoji");
+    const shouldOpenEmojiTray =
+      isEmojiReaction && isVisibleEmoji && isTouchEmojiMode() && !emojiReactions?.classList.contains("is-open");
+
+    if (shouldOpenEmojiTray) {
+      event.preventDefault();
+      openEmojiReactions();
+      return;
+    }
+
     if (isEmojiReaction) {
       collapseEmojiReactions();
       button.blur();
@@ -2032,7 +2052,7 @@ for (const button of reactionButtons) {
 }
 
 emojiReactions?.addEventListener("mouseleave", () => {
-  emojiReactions.classList.remove("is-collapsed");
+  emojiReactions.classList.remove("is-collapsed", "is-open");
 });
 
 rematchButton.addEventListener("click", () => {
